@@ -14,7 +14,9 @@ export const LATE_HOURS = 12;   // dropping out closer to kick-off than this giv
 export const MAX_STRIKES = 3;   // active penalties that suspend a player
 export const CLEAR_AFTER = 3;   // matches played before a penalty clears
 
-export const DEFAULT_CLUB = "Turf Weekly";
+export const APP_NAME = "Dribbl";
+export const DEFAULT_CLUB = APP_NAME;   // shown until the admin names the club
+export const OLD_APP_NAMES = ["Turf Weekly"];  // a club still carrying a previous app name counts as unnamed
 export const DEFAULT_SEED = 6;  // starting score until a player gets peer ratings
 export const SESSION_KEY = "tw.me";
 

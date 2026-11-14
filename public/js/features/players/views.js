@@ -5,6 +5,7 @@ import { esc, f1, fmtDate } from "../../lib/utils.js";
 import { derive, penOf, ratingOf } from "../../domain/derive.js";
 import { teamLabel } from "../../domain/match.js";
 import { ICON } from "../../ui/icons.js";
+import { accountBtns } from "../admin/view.js";
 import { avatar, emptyState, playerBadge, posBadges, rBadge, statusPill, strikes, tagBadge, teamDot } from "../../ui/components.js";
 
 export function vPlayers() {
@@ -45,6 +46,7 @@ export function vPlayer(pid) {
     isMe ? `<button class="btn sm" data-act="editProfile">Edit my profile</button><button class="btn sm" data-act="payDetails">My UPI details</button><button class="btn sm" data-act="changePw">Change password</button>` : "",
     admin && pen.suspended ? `<button class="btn sm accent" data-act="reapprove" data-p="${esc(pid)}">Reapprove</button>` : "",
     admin ? `<button class="btn sm" data-act="editPlayer" data-p="${esc(pid)}">Edit as admin</button>` : "",
+    admin && !isMe ? accountBtns(p) : "",
     isMe && admin ? `<a class="btn sm" href="#admin">Admin</a>` : "",
     isMe ? `<button class="btn sm ghost" data-act="logout">Log out</button>` : ""
   ].join("");
@@ -55,6 +57,7 @@ export function vPlayer(pid) {
         <p class="small muted">${esc(positions)}${isMe ? ` · @${esc(p.username)}` : ""}</p>
         ${inj.status && inj.status !== "fit" ? `<p class="small muted">${esc(inj.note || "")}${inj.returnDate ? `${inj.note ? " · " : ""}Expected back ${fmtDate(inj.returnDate)}` : ""}</p>` : ""}</div></section>
     ${buttons ? `<div class="row tools">${buttons}</div>` : ""}
+    ${p.active === false ? `<section class="note bad"><b>Account suspended.</b> ${esc(p.name)} can't log in or be picked until an admin restores the account.</section>` : ""}
     ${pen.suspended ? `<section class="note bad"><b>Suspended.</b> ${pen.active} active penalties. ${isMe ? "Ask the admin to reapprove you." : "Only the admin can reapprove."}</section>` : ""}
     <section class="tiles">
       <div class="tile"><div class="k">Rating</div><div class="v">${rBadge(r.v, { seed: !r.peer, lg: true })}</div><div class="s">${r.peer ? `Peer average · ${s.rN} rated games` : "Starting score"}</div></div>

@@ -1,12 +1,13 @@
 /* Logged-out screens: log in, sign up, and the player card every new player fills in. */
 import { S, UI, clubName, meP } from "../../core/state.js";
+import { SUSPENDED_MSG } from "./actions.js";
 import { POS, POS_NAME, FITNESS, MIN_PASSWORD, USERNAME_HELP } from "../../config/constants.js";
 import { esc } from "../../lib/utils.js";
-import { ICON } from "../../ui/icons.js";
+import { ICON, LOGO } from "../../ui/icons.js";
 import { sel } from "../../ui/components.js";
 
 const hero = (title, text) => `<div class="auth-hero">
-    <div class="auth-pitch" aria-hidden="true"><span class="auth-ball">${ICON.ball}</span></div>
+    <div class="auth-pitch" aria-hidden="true"><span class="auth-ball">${LOGO}</span></div>
     <h1>${title}</h1><p>${text}</p></div>`;
 
 export function vAuth() {
@@ -14,7 +15,9 @@ export function vAuth() {
   const first = !Object.keys(S.players).length;
   const tab = (id, label) => `<button type="button" role="tab" aria-selected="${UI.authMode === id}" class="${UI.authMode === id ? "on" : ""}" data-act="authMode" data-k="${id}">${label}</button>`;
 
+  const kicked = meP() && meP().active === false;
   const login = `<form data-form="login" class="stack">
+      ${kicked ? `<div class="note bad">${SUSPENDED_MSG}</div>` : ""}
       <div class="field"><label for="l-user">Username</label><input id="l-user" name="username" required autocapitalize="none" autocomplete="username" placeholder="e.g. shrutik10"></div>
       <div class="field"><label for="l-pass">Password</label><input id="l-pass" name="password" type="password" required autocomplete="current-password"></div>
       <p class="err" id="form-err" role="alert"></p>

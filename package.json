@@ -1,8 +1,8 @@
 {
-  "name": "turf-weekly",
+  "name": "dribbl",
   "version": "2.0.0",
   "private": true,
-  "description": "Weekly turf football organiser: sign-ups, fair teams, live score, peer ratings, UPI payments and stats.",
+  "description": "Dribbl: weekly turf football organiser, sign-ups, fair teams, live score, peer ratings, UPI payments and stats.",
   "type": "module",
   "scripts": {
     "dev": "npx serve public -l 5173",

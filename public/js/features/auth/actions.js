@@ -11,6 +11,8 @@ import { openModal, closeModal, formErr } from "../../ui/modal.js";
 import { toast } from "../../ui/toast.js";
 import { readPositions } from "../players/forms.js";
 
+export const SUSPENDED_MSG = "This account is suspended. Ask your club admin to restore it.";
+
 function startSession(pid) {
   S.me = pid;
   lsSet(SESSION_KEY, pid);
@@ -67,8 +69,10 @@ export const forms = {
     const username = cleanUser(fd.get("username"));
     const p = Object.values(S.players).find(x => x.username === username);
     const wrong = "Username or password is wrong.";
-    if (!p || p.active === false) return formErr(wrong);
+    if (!p) return formErr(wrong);
     if (await hashPw(p.salt, fd.get("password")) !== p.hash) return formErr(wrong);
+    /* Only someone who knows the password is told the account is suspended */
+    if (p.active === false) return formErr(SUSPENDED_MSG);
     startSession(p.id);
     go("matches"); render();
   },

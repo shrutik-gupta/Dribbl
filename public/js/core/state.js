@@ -1,5 +1,5 @@
 /* The single source of truth. S mirrors Firestore, UI holds view state that isn't saved. */
-import { SESSION_KEY, DEFAULT_CLUB } from "../config/constants.js";
+import { SESSION_KEY, DEFAULT_CLUB, OLD_APP_NAMES } from "../config/constants.js";
 import { lsGet } from "../lib/storage.js";
 
 export const COLLECTIONS = ["players", "matches", "ratings", "rsvps", "payments", "payinfo"];
@@ -29,7 +29,7 @@ export const allReady = () => Object.values(S.ready).every(Boolean);
 export const P = id => S.players[id];
 export const meP = () => S.players[S.me];
 export const isAdmin = () => !!(meP() && meP().isAdmin);
-export const clubName = () => (S.config && S.config.name) || DEFAULT_CLUB;
+export const clubName = () => { const n = S.config && S.config.name; return n && !OLD_APP_NAMES.includes(n) ? n : DEFAULT_CLUB; };
 
 /* A self-registered player has onboarded:false until they finish their player card.
    Players created before self-registration have no flag and count as onboarded. */

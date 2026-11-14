@@ -1,4 +1,4 @@
-# Turf Weekly
+# Dribbl
 
 Weekly turf football organiser: open sign-up, player cards, fair teams, no-show penalties, live score, peer ratings, UPI payments, stats and graphs.
 
@@ -20,7 +20,16 @@ Note: `npm run dev` talks to the real Firestore database named in `public/js/con
 2. A new player taps **Sign up** and picks a username and password.
 3. They fill in their player card: nickname, primary / secondary / extra position and fitness status.
 
-The first person to sign up on an empty database becomes the admin. Admins can edit any player (starting score, captain tag, reset password, deactivate), control any match and change club settings from **Me > Admin**.
+The first person to sign up on an empty database becomes the admin. Admins can edit any player (starting score, captain tag, reset password), suspend or delete accounts, control any match and change club settings from **Me > Admin**.
+
+## Suspending and deleting accounts
+
+From **Me > Admin** (or any player's profile) an admin can:
+
+- **Suspend** an account: the player is logged out and can't log in until an admin restores it. Their stats and history stay. Stored as `active: false` on the player.
+- **Delete** an account: removes the player, their UPI details and their replies to matches that haven't finished. Finished matches keep their scores and ratings and show the player as "Removed player". This can't be undone.
+
+Admins can't suspend or delete themselves. This is separate from the penalty suspension (3 active penalties), which only stops a player joining matches.
 
 ## Team names
 
@@ -31,7 +40,8 @@ When hosting a match the host can name both teams. A team with no name is called
 ```
 public/                    everything that is deployed
   index.html               page shell: loads fonts, CSS, Chart.js, Firebase and js/main.js
-  assets/                  favicon
+  assets/                  logo and app icons (icon.png is the source artwork)
+  manifest.webmanifest     name and icons for "Add to Home Screen"
   css/
     tokens.css             colours, radii, fonts (light and dark)
     base.css               reset, typography, layout utilities

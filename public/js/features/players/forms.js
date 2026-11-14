@@ -53,6 +53,5 @@ export function adminPlayerForm(p) {
       <div class="field"><label for="f-tag">Leadership tag</label>${sel("tag", [["", "None"], ["C", "Captain"], ["VC", "Vice captain"]], p.tag || "")}<span class="hint">Suggested to hosts when picking captains.</span></div></div>
     ${fitnessFields(p)}
     <label class="check"><input type="checkbox" name="isAdmin" ${p.isAdmin ? "checked" : ""}> Admin (can edit players and control any match)</label>
-    <label class="check"><input type="checkbox" name="active" ${p.active !== false ? "checked" : ""}> Active (can log in and be picked)</label>
     <button class="btn primary wide" type="submit">Save changes</button>`;
 }

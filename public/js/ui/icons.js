@@ -1,6 +1,9 @@
 /* Inline SVG icons (stroke icons, coloured by currentColor). */
 const svg = body => `<svg viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
 
+/* The Dribbl mark (white on transparent). Always sits on the brand green. */
+export const LOGO = '<img class="logo" src="assets/logo.png" alt="" width="256" height="256">';
+
 export const ICON = {
   ball: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.8 2.8-1.5 4.4H9.7l-1.5-4.4z"/><path d="M12 3v4.5M15.8 10.3l4.6-1.6M14.3 14.7l2.8 4M9.7 14.7l-2.8 4M8.2 10.3L3.6 8.7"/>'),
   players: svg('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.8"/><path d="M16 14.6c2.8 0 4.8 1.6 5.5 4.6"/>'),

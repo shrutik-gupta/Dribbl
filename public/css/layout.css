@@ -5,9 +5,10 @@
 .top { position: sticky; top: 0; z-index: 15; background: var(--bg); }
 .top-in { display: flex; align-items: center; gap: 14px; min-height: 64px; min-width: 0; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-right: auto; min-width: 0; }
-.brand-ball { width: 38px; height: 38px; border-radius: 13px; background: var(--primary); color: var(--primary-ink); display: flex; align-items: center; justify-content: center; transform: rotate(-8deg); transition: transform .5s var(--bounce); }
-.brand:hover .brand-ball { transform: rotate(172deg); }
-.brand-ball svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+/* The logo is white, so its tile stays brand green in both light and dark mode */
+.logo { display: block; width: 100%; height: 100%; object-fit: contain; }
+.brand-ball { flex: none; width: 38px; height: 38px; border-radius: 13px; background: var(--brand); overflow: hidden; transition: transform .3s var(--bounce); }
+.brand:hover .brand-ball { transform: scale(1.08) rotate(-4deg); }
 .brand-name { font-family: var(--display); font-weight: 800; font-size: 21px; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .me-chip { display: flex; border-radius: 50%; text-decoration: none; transition: transform .2s var(--bounce); }
 .me-chip:hover { transform: scale(1.08); }
@@ -59,8 +60,8 @@
 .status { min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; padding: 24px; max-width: 420px; margin: 0 auto; }
 .status-ball { line-height: 0; margin-bottom: 8px; color: var(--primary); }
 .status-ball svg { width: 56px; height: 56px; stroke-width: 1.6; }
-.status-ball.spin { animation: dribble 1s cubic-bezier(.5, 0, .5, 1) infinite alternate; }
-@keyframes dribble { from { transform: translateY(-22px) rotate(0); } to { transform: translateY(8px) rotate(180deg); } }
+.status-ball.logo-tile { width: 72px; height: 72px; border-radius: 22px; background: var(--brand); overflow: hidden; animation: dribble .9s cubic-bezier(.5, 0, .5, 1) infinite alternate; }
+@keyframes dribble { from { transform: translateY(-18px); } to { transform: translateY(6px); } }
 
 /* ---------- log in / sign up / player card ---------- */
 .auth { max-width: 440px; margin: 0 auto; padding: 0 16px 40px; }
@@ -70,9 +71,8 @@
 .auth-hero p { position: relative; margin-top: 8px; opacity: .9; max-width: 30ch; margin-inline: auto; }
 .auth-pitch { position: relative; width: 84px; height: 84px; margin: 0 auto 16px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .35); display: flex; align-items: center; justify-content: center; }
 .auth-pitch::before { content: ""; position: absolute; left: -200px; right: -200px; top: 50%; border-top: 2px solid rgba(255, 255, 255, .2); }
-.auth-ball { position: relative; width: 52px; height: 52px; border-radius: 50%; background: var(--lime); color: var(--lime-ink); display: flex; align-items: center; justify-content: center; animation: bob 1.6s ease-in-out infinite; }
-.auth-ball svg { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 1.7; }
-@keyframes bob { 0%, 100% { transform: translateY(-5px) rotate(-10deg); } 50% { transform: translateY(5px) rotate(14deg); } }
+.auth-ball { position: relative; width: 62px; height: 62px; animation: bob 1.8s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
 .auth-card { position: relative; margin-top: -34px; padding: 20px; }
 @media (min-width: 480px) { .auth { padding-top: 24px; } .auth-hero { margin: 0; border-radius: 36px; } }
 

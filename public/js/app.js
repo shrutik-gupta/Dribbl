@@ -1,5 +1,6 @@
 /* Root view: decides which screen to show for the current state and route. */
 import { S, UI, allReady, clubName, isAdmin, isOnboarded, meP } from "./core/state.js";
+import { APP_NAME } from "./config/constants.js";
 import { shell, statusScreen } from "./ui/shell.js";
 import { vAuth, vOnboard } from "./features/auth/views.js";
 import { vMatches } from "./features/matches/list.js";
@@ -35,10 +36,11 @@ function route() {
 
 export function renderApp() {
   if (S.bootFail) return paint(statusScreen("warn", "Can't open the club data", "The database isn't connected. Check <b>public/js/config/firebase.config.js</b> (see README.md). If it's already set up, check your connection and reload."));
-  if (!S.db || !allReady()) return paint(statusScreen("ball", "Warming up…", S.slow ? "This is taking longer than usual. Check your connection." : "Fetching players and matches."));
+  if (!S.db || !allReady()) return paint(statusScreen("logo", "Warming up…", S.slow ? "This is taking longer than usual. Check your connection." : "Fetching players and matches."));
   if (S.loadErr) return paint(statusScreen("warn", "Can't read the club data", "The database refused the request. Check the Firestore rules, then reload."));
 
-  document.title = clubName();
+  const club = clubName();
+  document.title = club === APP_NAME ? APP_NAME : club + " · " + APP_NAME;
   const me = meP();
   if (!S.me || !me || me.active === false) return paint(vAuth());
   if (!isOnboarded(me)) return paint(vOnboard());

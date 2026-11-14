@@ -1,6 +1,7 @@
-/* Admin-only actions: edit any player, club settings, penalties. */
-import { S, P, clubName } from "../../core/state.js";
-import { mutateMatch, savePlayer, setDoc } from "../../core/db.js";
+/* Admin-only actions: edit, suspend and delete players, club settings, penalties. */
+import { S, UI, P, clubName, isAdmin } from "../../core/state.js";
+import { go } from "../../core/router.js";
+import { delDoc, mutateMatch, savePlayer, setDoc } from "../../core/db.js";
 import { DEFAULT_CLUB, MIN_PASSWORD, USERNAME_RE, USERNAME_HELP } from "../../config/constants.js";
 import { hashPw } from "../../lib/crypto.js";
 import { cleanUser, clone, esc, uid } from "../../lib/utils.js";
@@ -29,6 +30,40 @@ export const actions = {
     if (!await confirmBox("Reapprove " + p.name + "?", "All their current penalties are cleared and they can join matches again.", "Reapprove")) return;
     const n = clone(p); n.penaltyResetAt = Date.now();
     if (await savePlayer(p.id, n)) toast(p.name + " is reapproved.");
+  },
+
+  /* Account suspension is the player's `active` flag: a suspended player is logged out,
+     can't log in and can't be picked. Not the same as the penalty suspension (3 strikes). */
+  async suspendPlayer(el) {
+    const pid = el.dataset.p, name = (P(pid) || {}).name;
+    if (!isAdmin() || !P(pid)) return;
+    if (pid === S.me) return toast("You can't suspend yourself.");
+    if (!await confirmBox("Suspend " + name + "?", "They are logged out and can't log in until you restore the account. Their stats and match history stay.", "Suspend account", true)) return;
+    const p = P(pid); if (!p) return;
+    const n = clone(p); n.active = false; n.suspendedAt = Date.now();
+    if (await savePlayer(pid, n)) toast(name + " is suspended.");
+  },
+  async restorePlayer(el) {
+    const p = P(el.dataset.p);
+    if (!isAdmin() || !p) return;
+    const n = clone(p); n.active = true; delete n.suspendedAt;
+    if (await savePlayer(p.id, n)) toast(p.name + " can log in again.");
+  },
+  async deletePlayer(el) {
+    const pid = el.dataset.p, name = (P(pid) || {}).name;
+    if (!isAdmin() || !P(pid)) return;
+    if (pid === S.me) return toast("You can't delete your own account.");
+    if (!await confirmBox("Delete " + name + "?", `This removes their account, login and UPI details for good. Finished matches keep their scores and show "Removed player". This can't be undone.`, "Delete account", true)) return;
+    if (!P(pid)) return;
+    if (!await delDoc("players/" + pid)) return;
+    if (S.payinfo[pid]) delDoc("payinfo/" + pid);
+    /* Drop their replies to matches that haven't finished, so they vanish from those squads */
+    for (const [rid, r] of Object.entries(S.rsvps)) {
+      const m = S.matches[r.matchId];
+      if (r.pid === pid && (!m || m.status !== "ended")) delDoc("rsvps/" + rid);
+    }
+    if (UI.route === "player-" + pid) go("admin");
+    toast(name + "'s account is deleted.");
   }
 };
 
@@ -48,10 +83,9 @@ export const forms = {
     const pw = String(fd.get("password") || "");
     if (pw && pw.length < MIN_PASSWORD) return formErr(`Password needs at least ${MIN_PASSWORD} characters.`);
     if (existing.id === S.me && !fd.get("isAdmin")) return formErr("You can't remove your own admin access.");
-    if (existing.id === S.me && !fd.get("active")) return formErr("You can't deactivate yourself.");
 
     const p = clone(existing);
-    Object.assign(p, pos, { name, username, seed, tag: fd.get("tag"), isAdmin: !!fd.get("isAdmin"), active: !!fd.get("active"), injury: readFitness(fd) });
+    Object.assign(p, pos, { name, username, seed, tag: fd.get("tag"), isAdmin: !!fd.get("isAdmin"), injury: readFitness(fd) });
     if (modal.state.photo !== undefined) p.photo = modal.state.photo;
     if (pw) { p.salt = uid("s"); p.hash = await hashPw(p.salt, pw); }
     if (await savePlayer(p.id, p)) { closeModal(); toast(pw ? `Saved. Tell ${name} their new password.` : "Saved."); }
