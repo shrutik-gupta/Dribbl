@@ -46,10 +46,10 @@ export function tabLineups(m, ctl) {
     return `<div class="pitch-cap"><span>${teamTag(m, side)}${c ? ` <span class="muted small">· Capt. ${esc(c.name)}</span>` : ""}</span><span class="muted small">${shape ? `<b class="num">${shape}</b> · ` : ""}${ids.length} players</span></div>`;
   };
 
-  /* Once the match has started the line-up is final, so it can be exported as an image */
+  /* The line-up can be exported as an image at any stage, before kick-off too (not while editing) */
   const tools = [
     canEdit ? `<button class="btn sm ${editing ? "primary" : ""}" data-act="editForm" data-m="${mid}">${editing ? ICON.check + " Done" : "Edit formation"}</button>` : "",
-    m.status === "setup" || editing ? "" : `<button class="btn sm accent" data-act="exportLineup" data-m="${mid}">${ICON.image} Export image</button>`
+    editing ? "" : `<button class="btn sm accent" data-act="exportLineup" data-m="${mid}">${ICON.image} Export image</button>`
   ].join("");
   const foot = editing ? "Drag a player to any slot on their own half. Dropping on another player swaps the two. The line a player stands on sets their position."
     : m.status === "ended" ? `Badges show each player's rating for this match. ${ICON.star} = man of the match.` : "Badges show each player's current rating. Dashed = starting score.";

@@ -1,4 +1,4 @@
-/* Exporting images: the line-up of a started match and a player's own match card.
+/* Exporting images: a match's line-up (before or after kick-off) and a player's own match card.
    The image is drawn (see cards.js), shown in a modal, then shared or saved from there. */
 import { S, P } from "../../core/state.js";
 import { firstName } from "../../lib/utils.js";
@@ -54,7 +54,7 @@ async function show(title, name, draw) {
 export const actions = {
   exportLineup(el) {
     const m = S.matches[el.dataset.m];
-    if (!m || m.status === "setup" || !hasAccess(m)) return;
+    if (!m || !hasAccess(m)) return;
     show("Line-up image", `dribbl-lineup-${m.date}.png`, () => lineupCard(m));
   },
   exportMyStats(el) {
