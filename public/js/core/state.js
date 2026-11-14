@@ -15,7 +15,7 @@ export const S = {
 export const UI = {
   route: "matches",
   authMode: "login",               // "login" | "register"
-  draft: {}, reRate: {}, editRes: {}, mtab: {},
+  draft: {}, reRate: {}, editRes: {}, editForm: {}, mtab: {},
   stats: { period: "all", sort: "avg", dir: -1 },
   graphs: { gran: "month", sel: null }
 };

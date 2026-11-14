@@ -5,6 +5,7 @@ import { initRouter } from "./core/router.js";
 import { initDb, subscribe } from "./core/db.js";
 import { bindEvents, register } from "./core/events.js";
 import { renderApp } from "./app.js";
+import { bindFormationDrag } from "./features/matches/drag.js";
 
 import * as modal from "./ui/modal.js";
 import * as auth from "./features/auth/actions.js";
@@ -29,6 +30,7 @@ window.__nativeBack = () => {
 async function boot() {
   setRenderer(renderApp);
   bindEvents();
+  bindFormationDrag();
   initRouter();
   render();
 

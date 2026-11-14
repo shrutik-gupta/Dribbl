@@ -8,6 +8,8 @@ import { esc, firstName, fmtLong, fmtTime, joinCode, parseD, rupees, todayStr, u
 import { derive, liveTeams, penOf, perHead, squadOf, suspended, ratingOf } from "../../domain/derive.js";
 import { codeMatches, hasAccess, injured, isLateNow, matchLink, minuteOf, payOf, rememberCode, rsvpOf, teamLabel } from "../../domain/match.js";
 import { balanceTeams, suggestCaps } from "../../domain/balance.js";
+import { gridOf } from "../../domain/formation.js";
+import { POS } from "../../config/constants.js";
 import { closeModal, confirmBox, formErr, modal, openModal } from "../../ui/modal.js";
 import { toast } from "../../ui/toast.js";
 import { matchForm, readMatchForm } from "./forms.js";
@@ -20,6 +22,22 @@ async function copyText(text, done, failed) {
 function rsvpWrite(mid, pid, status, extra) {
   const rid = mid + "_" + pid, cur = S.rsvps[rid] || {};
   return setDoc("rsvps/" + rid, Object.assign({}, cur, { matchId: mid, pid, status, at: Date.now(), by: S.me }, extra || {}));
+}
+
+/* Formation editor: put a player in a slot of their team's half. A player already in that
+   slot swaps places with them. The whole team's layout is saved, so it stays as the host saw it. */
+export function placeInSlot(mid, side, pid, row, col) {
+  const m0 = S.matches[mid]; if (!m0 || !POS.includes(row)) return;
+  const ids = liveTeams(m0)[side];
+  if (!ids.includes(pid)) return;
+  return mutateMatch(mid, m => {
+    const grid = gridOf(m, ids, true); if (!grid) return false;
+    const from = POS.find(r => grid[r].includes(pid)); if (!from) return false;
+    const c0 = grid[from].indexOf(pid), other = grid[row][col];
+    grid[from][c0] = other; grid[row][col] = pid;
+    m.slot = m.slot || {};
+    for (const r of POS) grid[r].forEach((p, c) => { if (p) { m.pos[p] = r; m.slot[p] = c; } });
+  });
 }
 
 export const actions = {
@@ -117,7 +135,7 @@ export const actions = {
       const posOf = p => m.pos[p] || P(p).position || "MID";
       const prevKey = m.teamA.slice().sort().join(",");
       const res = balanceTeams(ids, posOf, p => ratingOf(p).v, prevKey);
-      m.teamA = res.A; m.teamB = res.B;
+      m.teamA = res.A; m.teamB = res.B; m.slot = {};
       ids.forEach(p => { m.pos[p] = posOf(p); });
       const a = suggestCaps(m.teamA), b = suggestCaps(m.teamB);
       m.capA = a.cap; m.vcA = a.vc; m.capB = b.cap; m.vcB = b.vc;
@@ -145,6 +163,7 @@ export const actions = {
       const from = m.teamA.includes(pid) ? "A" : "B", to = from === "A" ? "B" : "A";
       m["team" + from] = m["team" + from].filter(x => x !== pid); m["team" + to].push(pid);
       for (const k of ["cap", "vc"]) if (m[k + from] === pid) m[k + from] = "";
+      if (m.slot) delete m.slot[pid];
     });
   },
 
@@ -182,6 +201,7 @@ export const actions = {
     mutateMatch(id, x => { x.status = "ended"; x.endedAt = Date.now(); });
   },
   editRes(el) { UI.editRes[el.dataset.m] = !UI.editRes[el.dataset.m]; render(); },
+  editForm(el) { UI.editForm[el.dataset.m] = !UI.editForm[el.dataset.m]; render(); },
 
   /* ----- ratings ----- */
   rate(el) { const { m, p, v } = el.dataset; (UI.draft[m] || (UI.draft[m] = {}))[p] = +v; render(); },
@@ -242,7 +262,7 @@ export const actions = {
 };
 
 export const changes = {
-  setPos(el) { const pid = el.dataset.p, v = el.value; mutateMatch(el.dataset.m, m => { m.pos[pid] = v; }); }
+  setPos(el) { const pid = el.dataset.p, v = el.value; mutateMatch(el.dataset.m, m => { m.pos[pid] = v; if (m.slot) delete m.slot[pid]; }); }
 };
 
 export const forms = {

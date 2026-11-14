@@ -35,6 +35,10 @@ The join code is checked in the app, like every other rule here (see Security be
 
 When the host has saved a UPI ID, each player sees a **Pay** button on the match's Payments tab. It opens a UPI link (`upi://pay?pa=...&am=...`) so the player's own UPI app starts with the host's UPI ID and the player's share filled in. Dribbl never handles money and cannot see whether a payment went through: the player taps **I've paid** afterwards and the host verifies it against their UPI app. The UPI ID and QR code stay on the page as a fallback.
 
+## Formations
+
+On the Line-ups tab the host (or an admin) can tap **Edit formation** and drag players around their own half. Each half has four lines (GK, DEF, MID, FWD) with three slots across; dropping on another player swaps the two. The line a player stands on becomes their position for the match (`pos` on the match) and the slot across is saved in `slot`, so a 2-3-1 or 3-2-1 is just where the host puts people. The caption shows the resulting shape. Until the host places anyone, players are spread out by position. Teams of more than 12 can't be edited this way and are drawn as plain rows.
+
 ## Exporting images for stories
 
 Two images can be exported, each 1080 × 1920 (story size) with the Dribbl mark and web address at the bottom:

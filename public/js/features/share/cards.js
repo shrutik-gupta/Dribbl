@@ -7,6 +7,7 @@ import { APP_NAME, APP_URL, POS, POS_NAME } from "../../config/constants.js";
 import { f1, firstName, fmtLong, fmtTime } from "../../lib/utils.js";
 import { derive, liveTeams, ratingOf } from "../../domain/derive.js";
 import { otherSide, teamLabel } from "../../domain/match.js";
+import { gridOf, posOf } from "../../domain/formation.js";
 import { avatarTone, initials } from "../../ui/components.js";
 
 const W = 1080, H = 1920, PAD = 60;
@@ -181,7 +182,6 @@ function watermark(ctx, logo) {
   text(ctx, SITE, x + size + gap, y + 82, { size: 30, weight: 600, fill: C.mist });
 }
 
-const posOf = (m, pid) => m.pos[pid] || (P(pid) || {}).position || "MID";
 const upper = s => String(s).toUpperCase();
 const dateLine = m => [fmtLong(m.date), m.status === "ended" ? "" : fmtTime(m.time), m.venue].filter(Boolean).join("  ·  ");
 
@@ -241,14 +241,18 @@ export async function lineupCard(m) {
 
   const half = (side, ids, top) => {
     const order = top ? POS : POS.slice().reverse();
-    const rows = order.map(pos => ids.filter(p => posOf(m, p) === pos)).filter(r => r.length);
+    /* Same layout as the Line-ups tab: the host's formation grid when the team fits it */
+    const grid = gridOf(m, ids);
+    const rows = grid ? order.map(pos => grid[pos]).filter(r => r.some(Boolean))
+      : order.map(pos => ids.filter(p => posOf(m, p) === pos)).filter(r => r.length);
     const y0 = top ? py + 44 : py + ph / 2 + 20, hh = ph / 2 - 64, rowH = hh / (rows.length || 1);
     rows.forEach((row, i) => {
-      const slot = (pw - 40) / row.length;
+      const edge = grid ? pw * .06 : 20, slot = (pw - 2 * edge) / row.length;
       const r = Math.min(62, slot * .3, rowH * .3);
       row.forEach((pid, j) => {
+        if (!pid) return;
         const p = P(pid) || { id: pid, name: "?" };
-        const cx = px + 20 + (j + .5) * slot, cy = y0 + (i + .5) * rowH - r * .42;
+        const cx = px + edge + (j + .5) * slot, cy = y0 + (i + .5) * rowH - r * .42;
         drawAvatar(ctx, p, imgs[pid], cx, cy, r, side === "A" ? C.lime : C.ink, Math.max(4, r * .11));
         text(ctx, firstName(p), cx, cy + r + Math.max(24, r * .6) + 8, { size: Math.max(24, r * .6), weight: 700, align: "center", maxW: slot - 10, shadow: true });
 
