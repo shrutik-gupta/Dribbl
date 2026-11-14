@@ -166,6 +166,9 @@
 .modal-bg { position: fixed; inset: 0; background: rgba(8, 14, 11, .55); z-index: 50; display: flex; align-items: flex-end; justify-content: center; animation: fade .2s; }
 .modal { background: var(--surface); width: 100%; max-width: 560px; max-height: 92vh; overflow: auto; border-radius: 28px 28px 0 0; padding: 20px 20px calc(20px + var(--safe-bottom)); animation: sheet .32s var(--bounce); }
 @media (min-width: 600px) { .modal-bg { align-items: center; padding: 20px; } .modal { border-radius: 28px; } }
+/* exported image preview (features/share) */
+.xcard { display: block; width: auto; max-width: 100%; max-height: 56vh; margin: 0 auto 16px; border-radius: 18px; box-shadow: var(--shadow); }
+.xcard.wait { display: flex; align-items: center; justify-content: center; aspect-ratio: 9 / 16; height: 56vh; background: var(--surface-2); color: var(--muted); font-weight: 600; box-shadow: none; }
 .modal-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
 .modal-h h2 { flex: 1; }
 @keyframes fade { from { opacity: 0; } }

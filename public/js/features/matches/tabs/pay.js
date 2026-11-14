@@ -25,12 +25,15 @@ export function tabPay(m, ctl) {
 
   const payee = (info.qr || info.upiId) ? `<div class="payee">${info.qr ? `<img class="qr" src="${esc(info.qr)}" alt="UPI QR code for ${esc(host.name)}">` : ""}
       <div class="stack">${info.upiId ? `<div class="field"><label for="upi-id">UPI ID</label><div class="upi"><input id="upi-id" readonly value="${esc(info.upiId)}"><button class="btn sm" data-act="copyUpi">Copy</button></div></div>` : ""}
-        <p class="muted small">Paying from this phone? Copy the UPI ID and paste it in GPay, PhonePe or Paytm. ${info.qr ? "On another phone, scan the QR." : ""}</p></div></div>`
+        <p class="muted small">If the Pay button doesn't open your UPI app, copy the UPI ID and paste it in GPay, PhonePe or Paytm. ${info.qr ? "On another phone, scan the QR." : ""}</p></div></div>`
     : `<div class="note">${m.hostId === S.me ? `Add your UPI ID and QR so players can pay you. <button class="btn sm" data-act="payDetails" style="margin-left:6px">Add UPI details</button>`
       : `${esc(host.name)} hasn't added UPI details. Ask them for their UPI ID.`}</div>`;
 
   const myBlock = payers.includes(S.me) ? `<div class="spread" style="margin-top:16px">${
-    myState === "none" ? `<span class="muted small">After paying, tell ${esc(firstName(host))}.</span><button class="btn primary" data-act="iPaid" data-m="${mid}">I've paid ${rupees(each)}</button>`
+    myState === "none" ? (info.upiId
+      ? `<span class="muted small">Pay opens your UPI app with ${rupees(each)} and ${esc(firstName(host))}'s UPI ID filled in. Come back and tap <b>I've paid</b>.</span>
+        <span class="row"><button class="btn primary" data-act="payUpi" data-m="${mid}">${ICON.rupee} Pay ${rupees(each)}</button><button class="btn" data-act="iPaid" data-m="${mid}">I've paid</button></span>`
+      : `<span class="muted small">After paying, tell ${esc(firstName(host))}.</span><button class="btn primary" data-act="iPaid" data-m="${mid}">I've paid ${rupees(each)}</button>`)
     : myState === "claimed" ? `<span class="pill warn">Waiting for ${esc(firstName(host))} to verify</span><button class="btn sm ghost" data-act="undoPaid" data-m="${mid}">Undo</button>`
     : `<span class="pill good">${ICON.check} Payment verified</span>`}</div>` : "";
 

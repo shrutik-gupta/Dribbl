@@ -25,6 +25,13 @@ export const fmtTime = t => {
   return ((h % 12) || 12) + ":" + pad(mi) + (h < 12 ? " am" : " pm");
 };
 
+/* UPI payment link: opens the payer's UPI app with the payee, amount and note filled in.
+   The "@" of the UPI ID is left as-is because some UPI apps don't decode it. */
+export function upiLink(upiId, payeeName, amount, note) {
+  const q = [["pa", upiId], ["pn", payeeName], ["am", Number(amount).toFixed(2)], ["cu", "INR"], ["tn", note]];
+  return "upi://pay?" + q.map(([k, v]) => k + "=" + encodeURIComponent(v).replace(/%40/g, "@")).join("&");
+}
+
 export const rupees = n => "₹" + Math.round(n).toLocaleString("en-IN");
 export const f1 = n => (n == null || isNaN(n) ? "–" : n.toFixed(1));
 

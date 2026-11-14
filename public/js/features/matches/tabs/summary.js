@@ -44,10 +44,15 @@ export function tabSummary(m, ctl) {
 
   const motm = P(mi.motm);
   const editing = UI.editRes[m.id];
-  const needRate = inMatch(m, S.me) && !S.ratings[m.id + "_" + S.me];
+  const played = inMatch(m, S.me);
+  const needRate = played && !S.ratings[m.id + "_" + S.me];
+  const myCard = played ? `<section class="card callout"><span class="bubble" aria-hidden="true">${ICON.image}</span>
+        <div class="callout-t"><b>Your match card</b><div class="muted small">Your result, goals and rating as an image for your story.</div></div>
+        <button class="btn sm ${needRate ? "" : "accent"}" data-act="exportMyStats" data-m="${mid}">Export image</button></section>` : "";
   return `${needRate ? `<section class="card callout"><span class="bubble" aria-hidden="true">${ICON.star}</span><div class="callout-t"><b>Rate the players from this match</b></div>
         <button class="btn accent sm" data-act="mtab" data-m="${mid}" data-t="ratings">Rate now</button></section>` : ""}
     ${motm ? `<section class="card motm spread"><div class="row">${avatar(motm, 52)}<div><span class="eyebrow">${ICON.trophy} Man of the match</span><div class="motm-n">${esc(motm.name)}</div></div></div>${rBadge(mi.avg[mi.motm].avg, { star: true, lg: true })}</section>` : ""}
+    ${myCard}
     <section><div class="sec-h"><h2>Goals</h2>${ctl ? `<button class="btn sm" data-act="editRes" data-m="${mid}">${editing ? "Done editing" : "Fix score or scorers"}</button>` : ""}</div>
       ${editing ? `${extrasCtl(m)}<div style="margin-top:10px">${teams("ended")}</div>` : timeline(m)}</section>`;
 }

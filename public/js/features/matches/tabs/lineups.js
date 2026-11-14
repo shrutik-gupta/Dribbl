@@ -33,10 +33,13 @@ export function tabLineups(m, ctl) {
     return `<div class="pitch-cap"><span>${teamTag(m, side)}${c ? ` <span class="muted small">· Capt. ${esc(c.name)}</span>` : ""}</span><span class="muted small">${ids.length} players</span></div>`;
   };
 
-  return `<section class="pitch-wrap">${caption("B", t.B)}
+  /* Once the match has started the line-up is final, so it can be exported as an image */
+  const exportBtn = m.status === "setup" ? "" : `<div class="row end"><button class="btn sm accent" data-act="exportLineup" data-m="${esc(m.id)}">${ICON.image} Export image</button></div>`;
+
+  return `<section class="pitch-wrap">${exportBtn}${caption("B", t.B)}
     <div class="pitch" role="img" aria-label="Line-ups on a pitch">
       <span class="ln out"></span><span class="ln half"></span><span class="ln circ"></span><span class="ln boxT"></span><span class="ln boxB"></span>
       ${half("B", t.B, true)}${half("A", t.A, false)}</div>
     ${caption("A", t.A)}
-    <p class="muted tiny foot">${m.status === "ended" ? "Badges show each player's rating for this match. ${ICON.star} = man of the match." : "Badges show each player's current rating. Dashed = starting score."}</p></section>`;
+    <p class="muted tiny foot">${m.status === "ended" ? `Badges show each player's rating for this match. ${ICON.star} = man of the match.` : "Badges show each player's current rating. Dashed = starting score."}</p></section>`;
 }

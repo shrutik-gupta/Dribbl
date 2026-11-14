@@ -31,6 +31,19 @@ The first person to sign up on an empty database becomes the admin. Admins can e
 
 The join code is checked in the app, like every other rule here (see Security below), so treat it as a way to keep a match among invited friends, not as a lock.
 
+## Paying the host
+
+When the host has saved a UPI ID, each player sees a **Pay** button on the match's Payments tab. It opens a UPI link (`upi://pay?pa=...&am=...`) so the player's own UPI app starts with the host's UPI ID and the player's share filled in. Dribbl never handles money and cannot see whether a payment went through: the player taps **I've paid** afterwards and the host verifies it against their UPI app. The UPI ID and QR code stay on the page as a fallback.
+
+## Exporting images for stories
+
+Two images can be exported, each 1080 × 1920 (story size) with the Dribbl mark and web address at the bottom:
+
+- **Line-up:** once a match has started, the Line-ups tab has an **Export image** button. It draws both teams on the pitch with ratings, captains and (after scoring) goals.
+- **Your match card:** after full time, anyone who played sees **Your match card** on the Summary tab: photo, name, position played, result and score, goals, rating, rank on the pitch, highlights such as hat-trick or man of the match, and all-time numbers. The rating shows as pending until ratings come in, so export again later for the full card.
+
+The images are drawn on a canvas in `js/features/share/cards.js`; nothing is uploaded. **Share** opens the phone's share sheet and **Save image** downloads the PNG. The Android app writes the image to its cache with the Capacitor Filesystem plugin and passes it to the share sheet.
+
 ## Suspending and deleting accounts
 
 From **Me > Admin** (or any player's profile) an admin can:
@@ -77,6 +90,7 @@ public/                    everything that is deployed
     features/
       auth/                log in, sign up, player card
       matches/             list, match centre, tabs/, forms, actions
+      share/               exported story images: line-up and player match card
       players/             squad list, profile, profile forms
       stats/  graphs/  admin/
 firestore.rules            database access rules

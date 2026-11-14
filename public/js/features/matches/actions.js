@@ -4,8 +4,8 @@ import { render } from "../../core/render.js";
 import { go } from "../../core/router.js";
 import { delDoc, mutateMatch, setDoc } from "../../core/db.js";
 import { APP_NAME, CODE_LENGTH, LATE_HOURS, MAX_STRIKES, TEAM_NAME_MAX } from "../../config/constants.js";
-import { esc, firstName, fmtLong, fmtTime, joinCode, todayStr, uid } from "../../lib/utils.js";
-import { derive, liveTeams, penOf, squadOf, suspended, ratingOf } from "../../domain/derive.js";
+import { esc, firstName, fmtLong, fmtTime, joinCode, parseD, rupees, todayStr, uid, upiLink } from "../../lib/utils.js";
+import { derive, liveTeams, penOf, perHead, squadOf, suspended, ratingOf } from "../../domain/derive.js";
 import { codeMatches, hasAccess, injured, isLateNow, matchLink, minuteOf, payOf, rememberCode, rsvpOf, teamLabel } from "../../domain/match.js";
 import { balanceTeams, suggestCaps } from "../../domain/balance.js";
 import { closeModal, confirmBox, formErr, modal, openModal } from "../../ui/modal.js";
@@ -198,6 +198,32 @@ export const actions = {
   },
 
   /* ----- payments ----- */
+  /* Opens the player's UPI app with the host's UPI ID and this player's share filled in.
+     No money moves through Dribbl: the player pays in their own app, then taps "I've paid". */
+  payUpi(el) {
+    const m = S.matches[el.dataset.m]; if (!m) return;
+    const host = P(m.hostId) || {}, upiId = (S.payinfo[m.hostId] || {}).upiId, amount = perHead(m);
+    if (!upiId || !amount) return;
+    const day = parseD(m.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+    const link = upiLink(upiId, host.name || "Host", amount, `${APP_NAME} match ${day}`);
+
+    /* When a UPI app (or the app picker) opens, this page goes to the background.
+       If it never does, nothing on this device could open the link. */
+    let left = false;
+    const watch = () => {
+      if (document.hidden) { left = true; return; }
+      if (!left) return;
+      document.removeEventListener("visibilitychange", watch);
+      if (!payOf(m.id, S.me)) toast(`Paid? Tap "I've paid" so ${firstName(host)} can verify it.`);
+    };
+    document.addEventListener("visibilitychange", watch);
+    setTimeout(() => {
+      if (left || document.hidden) return;
+      document.removeEventListener("visibilitychange", watch);
+      toast(`No UPI app opened. Copy the UPI ID and pay ${rupees(amount)} from your UPI app.`);
+    }, 2500);
+    window.location.href = link;
+  },
   iPaid(el) {
     const mid = el.dataset.m;
     setDoc("payments/" + mid + "_" + S.me, { matchId: mid, pid: S.me, paidAt: Date.now(), verified: false }).then(ok => ok && toast("Marked as paid. The host will verify it."));

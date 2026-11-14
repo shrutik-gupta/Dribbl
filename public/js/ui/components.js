@@ -11,12 +11,16 @@ const AVATAR_TONES = [
   ["#a8ecae", "#06301c"], ["#56615b", "#ffffff"], ["#cfd6d2", "#141917"], ["#14b877", "#04130b"]
 ];
 
+/* Shared with the exported images (features/share), which draw avatars on a canvas */
+export const initials = p => ((p && p.name) || "?").trim().split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
+export const avatarTone = p => AVATAR_TONES[hashStr(p.id) % AVATAR_TONES.length];
+
 export function avatar(p, size = 36) {
   const box = `width:${size}px;height:${size}px`;
   if (!p) return `<span class="av" style="${box};background:var(--surface-2)"></span>`;
   if (p.photo) return `<img class="av" src="${esc(p.photo)}" alt="" style="${box}">`;
-  const ini = (p.name || "?").trim().split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase();
-  const [bg, ink] = AVATAR_TONES[hashStr(p.id) % AVATAR_TONES.length];
+  const ini = initials(p);
+  const [bg, ink] = avatarTone(p);
   return `<span class="av" style="${box};background:${bg};color:${ink};font-size:${Math.round(size * .4)}px">${esc(ini)}</span>`;
 }
 
