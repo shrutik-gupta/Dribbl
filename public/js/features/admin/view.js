@@ -15,7 +15,7 @@ export function vAdmin() {
   return `<a class="back" href="#me">${ICON.back} Me</a>
     <div class="pagehead"><div><h1>Admin</h1><p class="muted small">${esc(clubName())} · ${list.length} accounts. Set starting scores, captains and who can play.</p></div>
       <button class="btn" data-act="editClub">Club settings</button></div>
-    <section class="note good">📣 <b>Growing the squad:</b> share the website link. Friends tap <b>Sign up</b>, pick a username and password, and fill in their player card themselves.</section>
+    <section class="note good"><b>Growing the squad:</b> share the website link. Friends tap <b>Sign up</b>, pick a username and password, and fill in their player card themselves.</section>
     ${susp.length ? `<section><div class="sec-h"><h2>Suspended</h2></div><div class="card flush plist">${susp.map(p => `<div class="it">${avatar(p, 34)}<a class="nm" href="#player-${esc(p.id)}">${esc(p.name)} ${strikes(penOf(p.id).active)}</a>
         <span class="acts"><button class="btn sm accent" data-act="reapprove" data-p="${esc(p.id)}">Reapprove</button></span></div>`).join("")}</div>
       <p class="muted tiny foot">Reapproving clears all their current penalties. Their history stays on their profile.</p></section>` : ""}

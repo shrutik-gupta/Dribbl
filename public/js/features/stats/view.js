@@ -46,7 +46,7 @@ export function vStats() {
       <div class="tile"><div class="k">Top scorer</div><div class="v">${scorers[0] ? scorers[0].goals : "–"}</div><div class="s">${scorers[0] ? esc(P(scorers[0].pid).name) : "No goals yet"}</div></div>
     </section>
     <section>${st.length ? `<div class="tscroll"><table><thead><tr>${th("name", "Player", "l sticky")}${th("pos", "Pos", "l")}${th("mp", "MP")}${th("w", "W")}${th("d", "D")}${th("l", "L")}${th("winPct", "Win %")}${th("goals", "Goals")}${th("gpm", "G/MP")}${th("avg", "Rating")}${th("motm", "MOTM")}<th class="l">Last 5</th></tr></thead>
-      <tbody>${st.map(row).join("")}</tbody></table></div>` : emptyState("📊", "No finished matches in this period.")}</section>`;
+      <tbody>${st.map(row).join("")}</tbody></table></div>` : emptyState("stats", "No finished matches in this period.")}</section>`;
 }
 
 export const actions = {

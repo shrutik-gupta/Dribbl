@@ -3,11 +3,12 @@ import { P } from "../../../core/state.js";
 import { POS } from "../../../config/constants.js";
 import { esc, firstName } from "../../../lib/utils.js";
 import { derive, liveTeams } from "../../../domain/derive.js";
+import { ICON } from "../../../ui/icons.js";
 import { avatar, emptyState, playerBadge, rBadge, teamTag } from "../../../ui/components.js";
 
 export function tabLineups(m, ctl) {
   const t = liveTeams(m), mi = derive().info[m.id];
-  if (!t.A.length && !t.B.length) return `<section>${emptyState("📋", ctl ? "Make teams on the Squad tab first." : "The host hasn't made teams yet.")}</section>`;
+  if (!t.A.length && !t.B.length) return `<section>${emptyState("clipboard", ctl ? "Make teams on the Squad tab first." : "The host hasn't made teams yet.")}</section>`;
 
   const player = (pid, side) => {
     const p = P(pid) || { id: pid, name: "?" };
@@ -17,7 +18,7 @@ export function tabLineups(m, ctl) {
     const g = m.goals[pid] || 0;
     const cv = m["cap" + side] === pid ? '<span class="cvp">C</span>' : m["vc" + side] === pid ? '<span class="cvp">VC</span>' : "";
     return `<a class="pp ${side}" href="#player-${esc(pid)}"><span class="avw">${avatar(p, 46)}${badge}${cv}</span><span class="nm">${esc(firstName(p))}</span>
-      <span class="gl">${g ? "⚽".repeat(Math.min(g, 4)) + (g > 4 ? "+" : "") : "&nbsp;"}</span></a>`;
+      <span class="gl">${g ? ICON.ball.repeat(Math.min(g, 4)) + (g > 4 ? "+" : "") : "&nbsp;"}</span></a>`;
   };
 
   const half = (side, ids, topHalf) => {
@@ -37,5 +38,5 @@ export function tabLineups(m, ctl) {
       <span class="ln out"></span><span class="ln half"></span><span class="ln circ"></span><span class="ln boxT"></span><span class="ln boxB"></span>
       ${half("B", t.B, true)}${half("A", t.A, false)}</div>
     ${caption("A", t.A)}
-    <p class="muted tiny foot">${m.status === "ended" ? "Badges show each player's rating for this match. ★ = man of the match." : "Badges show each player's current rating. Dashed = starting score."}</p></section>`;
+    <p class="muted tiny foot">${m.status === "ended" ? "Badges show each player's rating for this match. ${ICON.star} = man of the match." : "Badges show each player's current rating. Dashed = starting score."}</p></section>`;
 }

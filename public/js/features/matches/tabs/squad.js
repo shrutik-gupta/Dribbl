@@ -4,6 +4,7 @@ import { LATE_HOURS, MAX_STRIKES } from "../../../config/constants.js";
 import { esc } from "../../../lib/utils.js";
 import { liveTeams, squadOf, suspended } from "../../../domain/derive.js";
 import { injured, isLateNow, rsvpOf, teamLabel } from "../../../domain/match.js";
+import { ICON } from "../../../ui/icons.js";
 import { avatar, injPill, playerBadge, posBadges } from "../../../ui/components.js";
 import { rsvpButtons } from "../list.js";
 import { balanceStrip, teamCol } from "../teamcol.js";
@@ -51,7 +52,7 @@ export function tabSquad(m, ctl) {
 
   const unassigned = t.unassigned.length ? `<div class="card flush plist" style="margin-top:10px"><div class="list-h">Not in a team yet</div>${t.unassigned.map(pid =>
     `<div class="it">${avatar(P(pid), 32)}<span class="nm">${esc(P(pid).name)}</span>${ctl ? `<span class="acts">${["A", "B"].map(s =>
-      `<button class="toggle" data-act="placeIn" data-side="${s}" data-m="${mid}" data-p="${esc(pid)}">→ ${esc(teamLabel(m, s))}</button>`).join("")}</span>` : ""}</div>`).join("")}</div>` : "";
+      `<button class="toggle" data-act="placeIn" data-side="${s}" data-m="${mid}" data-p="${esc(pid)}">${ICON.arrow} ${esc(teamLabel(m, s))}</button>`).join("")}</span>` : ""}</div>`).join("")}</div>` : "";
 
   return `${myCard}
     <section><div class="sec-h"><h2>Squad</h2><span class="muted small num">${n} in${split ? " · " + split : ""}</span></div>
@@ -59,7 +60,7 @@ export function tabSquad(m, ctl) {
         <div class="list-h">Not in (${others.length})</div>${outRows || `<div class="it muted small">Everyone's in.</div>`}</div>
       ${ctl ? `<p class="muted tiny foot"><b>No-show</b> removes the player and gives a penalty. <b>Remove</b> takes them out with no penalty. ${MAX_STRIKES} active penalties suspend a player.</p>` : ""}
     </section>
-    ${ctl ? `<section class="row"><button class="btn primary" data-act="makeTeams" data-m="${mid}" ${n < 4 ? "disabled" : ""}>${hasTeams ? "🔀 Rebalance teams" : "⚖️ Make fair teams"}</button>
+    ${ctl ? `<section class="row"><button class="btn primary" data-act="makeTeams" data-m="${mid}" ${n < 4 ? "disabled" : ""}>${hasTeams ? ICON.shuffle + " Rebalance teams" : ICON.scale + " Make fair teams"}</button>
       <span class="muted small">${n < 4 ? "Needs at least 4 players." : "Balances by rating and position."}</span></section>` : ""}
     ${changed ? `<section class="note warn"><b>The squad changed since teams were made.</b> ${ctl ? "Rebalance, or add the new players by hand below." : "The host will update the teams."}</section>` : ""}
     ${hasTeams || t.unassigned.length ? `<section><div class="sec-h"><h2>Teams</h2></div>${hasTeams ? balanceStrip(m, t) : ""}${unassigned}

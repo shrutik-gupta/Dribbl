@@ -1,13 +1,14 @@
 /* Reset, typography and layout utilities. */
 * { box-sizing: border-box; }
 html, body { margin: 0; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   background: var(--bg); color: var(--ink);
-  font-family: var(--body); font-size: 16px; line-height: 1.45;
+  font-family: var(--body); font-size: 16px; line-height: 1.45; overflow-wrap: break-word;
   -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
   padding-bottom: calc(104px + env(safe-area-inset-bottom));
 }
-h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.01em; line-height: 1.1; margin: 0; text-wrap: balance; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.01em; line-height: 1.1; margin: 0; text-wrap: balance; overflow-wrap: anywhere; min-width: 0; }
 h1 { font-size: 32px; font-weight: 800; }
 h2 { font-size: 21px; }
 h3 { font-size: 17px; }
@@ -15,7 +16,8 @@ p { margin: 0; }
 a { color: inherit; }
 button, input, select { font: inherit; color: inherit; }
 img { max-width: 100%; }
-svg { flex: none; }
+/* Default for inline icons: sized to the surrounding text. Components override the size where needed. */
+svg { flex: none; width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -.2em; }
 :focus-visible { outline: 3px solid var(--lime); outline-offset: 2px; }
 
 .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
@@ -39,8 +41,18 @@ section { margin-top: 22px; }
 .row.nowrap { flex-wrap: nowrap; }
 .row.tools { margin-top: 12px; gap: 8px; }
 .spread { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.row > *, .spread > * { min-width: 0; max-width: 100%; }
 .grid2 { display: grid; gap: 14px; }
+.grid2 > * { min-width: 0; }
 @media (min-width: 520px) { .grid2 { grid-template-columns: 1fr 1fr; } }
 
 @media (min-width: 760px) { body { padding-bottom: 48px; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ---------- small phones (down to 320px) ---------- */
+@media (max-width: 380px) {
+  .wrap { padding: 0 12px; }
+  h1 { font-size: 28px; }
+  h2 { font-size: 19px; }
+  section { margin-top: 18px; }
+}

@@ -3,6 +3,7 @@ import { S, P } from "../../../core/state.js";
 import { esc, firstName, rupees } from "../../../lib/utils.js";
 import { perHead, rosterOf } from "../../../domain/derive.js";
 import { payOf } from "../../../domain/match.js";
+import { ICON } from "../../../ui/icons.js";
 import { avatar, emptyState } from "../../../ui/components.js";
 
 export function tabPay(m, ctl) {
@@ -13,7 +14,7 @@ export function tabPay(m, ctl) {
   const each = perHead(m);
 
   if (!(m.cost > 0)) {
-    return `<section>${emptyState("💸", ctl ? `Add the turf cost to split payments.<br><button class="btn primary sm" style="margin-top:12px" data-act="editMatch" data-m="${mid}">Add turf cost</button>`
+    return `<section>${emptyState("rupee", ctl ? `Add the turf cost to split payments.<br><button class="btn primary sm" style="margin-top:12px" data-act="editMatch" data-m="${mid}">Add turf cost</button>`
       : "The host hasn't added the turf cost yet.")}</section>`;
   }
 
@@ -31,7 +32,7 @@ export function tabPay(m, ctl) {
   const myBlock = payers.includes(S.me) ? `<div class="spread" style="margin-top:16px">${
     myState === "none" ? `<span class="muted small">After paying, tell ${esc(firstName(host))}.</span><button class="btn primary" data-act="iPaid" data-m="${mid}">I've paid ${rupees(each)}</button>`
     : myState === "claimed" ? `<span class="pill warn">Waiting for ${esc(firstName(host))} to verify</span><button class="btn sm ghost" data-act="undoPaid" data-m="${mid}">Undo</button>`
-    : `<span class="pill good">Payment verified ✓</span>`}</div>` : "";
+    : `<span class="pill good">${ICON.check} Payment verified</span>`}</div>` : "";
 
   const rows = payers.map(pid => {
     const p = P(pid), s = st(pid);
@@ -47,6 +48,6 @@ export function tabPay(m, ctl) {
       <div style="margin-top:16px">${payee}</div>${myBlock}</section>
     <section><div class="sec-h"><h2>Paid list</h2><span class="muted small num">${verified} of ${payers.length} verified · ${rupees(verified * each)} of ${rupees(payers.length * each)}</span></div>
       <div class="progress"><span style="width:${payers.length ? verified / payers.length * 100 : 0}%"></span></div>
-      ${payers.length ? `<div class="card flush plist">${rows}</div>` : emptyState("👥", "No players yet.")}
+      ${payers.length ? `<div class="card flush plist">${rows}</div>` : emptyState("players", "No players yet.")}
       ${ctl ? `<p class="muted tiny foot">Check your UPI app, then tap Verify. You can verify cash payments too.</p>` : ""}</section>`;
 }

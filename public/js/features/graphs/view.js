@@ -11,7 +11,7 @@ const MAX_COMPARE = 8;
 
 export function vGraphs() {
   const D = derive(), G = UI.graphs;
-  if (!D.ended.length) return `<div class="pagehead"><h1>Graphs</h1></div><section>${emptyState("📈", "Graphs appear after the first finished match.")}</section>`;
+  if (!D.ended.length) return `<div class="pagehead"><h1>Graphs</h1></div><section>${emptyState("graphs", "Graphs appear after the first finished match.")}</section>`;
   const withGames = Object.values(D.all).filter(s => P(s.pid)).sort((a, b) => b.mp - a.mp || (b.avg || 0) - (a.avg || 0));
   if (!G.sel) G.sel = withGames.slice(0, 4).map(s => s.pid);
   G.sel = G.sel.filter(id => P(id));

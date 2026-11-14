@@ -12,7 +12,7 @@ export function rsvpButtons(m) {
   if (suspended(S.me)) return `<span class="pill bad">Suspended: you can't join</span>`;
   if (injured(S.me)) return `<span class="pill bad">Marked injured</span>`;
   const btn = (s, label, on) => `<button class="${st === s ? on : ""}" data-act="rsvp" data-s="${s}" data-m="${esc(m.id)}" aria-pressed="${st === s}">${label}</button>`;
-  return `<div class="seg" role="group" aria-label="Are you playing?">${btn("in", st === "in" ? "✓ I'm in" : "I'm in", "on-in")}${btn("out", "I'm out", "on-out")}</div>`;
+  return `<div class="seg" role="group" aria-label="Are you playing?">${btn("in", st === "in" ? ICON.check + " I'm in" : "I'm in", "on-in")}${btn("out", "I'm out", "on-out")}</div>`;
 }
 
 function mrow(m) {
@@ -38,7 +38,7 @@ function nextCard(m) {
     </div></article>`;
 }
 
-const callout = (emoji, title, text, action, bad) => `<section class="card callout ${bad ? "bad" : ""}"><span class="bubble" aria-hidden="true">${emoji}</span>
+const callout = (icon, title, text, action, bad) => `<section class="card callout ${bad ? "bad" : ""}"><span class="bubble" aria-hidden="true">${ICON[icon]}</span>
     <div class="callout-t"><b>${title}</b><p class="muted small">${text}</p></div>${action || ""}</section>`;
 
 export function vMatches() {
@@ -53,21 +53,21 @@ export function vMatches() {
   ended.forEach(m => { (groups[m.date] || (groups[m.date] = [])).push(m); });
   const tagline = live.length ? "There's a game on right now." : upcoming.length ? "Game on. Are you in?" : "Nothing on the calendar. Fancy hosting one?";
 
-  return `<div class="hello"><div><p class="eyebrow">${fmtLong(todayStr())}</p><h1>Hey ${esc(firstName(meP()))} <span class="wave" aria-hidden="true">👋</span></h1><p class="muted">${tagline}</p></div>
+  return `<div class="hello"><div><p class="eyebrow">${fmtLong(todayStr())}</p><h1>Hey ${esc(firstName(meP()))}</h1><p class="muted">${tagline}</p></div>
       <button class="btn primary" data-act="hostMatch">${ICON.plus} Host a match</button></div>
-    ${pen.suspended ? callout("🚫", "You're suspended.", `You have ${pen.active} active penalties, so you can't join matches. Ask the admin to reapprove you.`, "", true)
-      : pen.active ? callout("⚠️", `${pen.active} of ${MAX_STRIKES} penalties`, `${MAX_STRIKES} means suspension. Each one clears after you play ${CLEAR_AFTER} matches.`, strikes(pen.active)) : ""}
-    ${toRate.map(m => callout("⭐", "Rate your teammates", `${fmtDate(m.date)} · ${info[m.id].sA}–${info[m.id].sB}`,
+    ${pen.suspended ? callout("ban", "You're suspended.", `You have ${pen.active} active penalties, so you can't join matches. Ask the admin to reapprove you.`, "", true)
+      : pen.active ? callout("warn", `${pen.active} of ${MAX_STRIKES} penalties`, `${MAX_STRIKES} means suspension. Each one clears after you play ${CLEAR_AFTER} matches.`, strikes(pen.active)) : ""}
+    ${toRate.map(m => callout("star", "Rate your teammates", `${fmtDate(m.date)} · ${info[m.id].sA}–${info[m.id].sB}`,
       `<a class="btn accent sm" href="#match-${esc(m.id)}" data-act="openTab" data-m="${esc(m.id)}" data-t="ratings">Rate now</a>`)).join("")}
-    ${toPay.map(m => callout("💸", `Pay ${rupees(perHead(m))} to ${esc(firstName(P(m.hostId)))}`, `Turf on ${fmtDate(m.date)}`,
+    ${toPay.map(m => callout("rupee", `Pay ${rupees(perHead(m))} to ${esc(firstName(P(m.hostId)))}`, `Turf on ${fmtDate(m.date)}`,
       `<a class="btn sm" href="#match-${esc(m.id)}" data-act="openTab" data-m="${esc(m.id)}" data-t="pay">Pay now</a>`)).join("")}
     ${live.length ? `<section><div class="sec-h"><h2><span class="livedot"></span>Live</h2></div><div class="mgroup">${live.map(mrow).join("")}</div></section>` : ""}
     <section><div class="sec-h"><h2>Upcoming</h2></div>
       ${upcoming.length ? `<div class="stack">${upcoming.map(nextCard).join("")}</div>`
-        : emptyState("🗓️", `No upcoming match. Tap <b>Host a match</b> to set up the next game.`)}
+        : emptyState("calendar", `No upcoming match. Tap <b>Host a match</b> to set up the next game.`)}
     </section>
     <section><div class="sec-h"><h2>Results</h2><span class="muted small">${ended.length} played</span></div>
       ${ended.length ? Object.keys(groups).map(d => `<div class="mgroup"><div class="mg-h"><span>${fmtLong(d)}</span><span class="muted">${esc(groups[d][0].venue || "")}</span></div>${groups[d].map(mrow).join("")}</div>`).join("")
-        : emptyState("🥅", "No results yet. The first full-time whistle will show up here.")}
+        : emptyState("goal", "No results yet. The first full-time whistle will show up here.")}
     </section>`;
 }

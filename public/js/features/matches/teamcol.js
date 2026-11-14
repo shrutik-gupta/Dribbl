@@ -35,7 +35,7 @@ export function teamCol(m, side, mode, ctl, idsIn) {
       right = `<div class="goalc"><button class="iconbtn" data-act="goal" data-d="-1" ${who} ${g ? "" : "disabled"} aria-label="Remove goal for ${esc(p.name)}">−</button><b>${g}</b>
         <button class="iconbtn plus" data-act="goal" data-d="1" ${who} aria-label="Add goal for ${esc(p.name)}">+</button></div>`;
     } else {
-      right = `${posBadge(pos)}<span class="small goals-n">${g ? "⚽ " + g : ""}</span>`;
+      right = `${posBadge(pos)}<span class="small gcount goals-n">${g ? ICON.ball + g : ""}</span>`;
     }
     return `<div class="prow">${avatar(p, 34)}<span class="nm">${esc(p.name)} ${badges}</span>${right}</div>`;
   }).join("");

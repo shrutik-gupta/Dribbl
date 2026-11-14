@@ -23,7 +23,7 @@ export function vAuth() {
     </form>`;
 
   const register = `<form data-form="register" class="stack">
-      ${first ? `<div class="note good">👑 You're the first one here, so you'll be the club admin.</div>` : ""}
+      ${first ? `<div class="note good">You're the first one here, so you'll be the club admin.</div>` : ""}
       <div class="field"><label for="r-user">Pick a username</label><input id="r-user" name="username" required autocapitalize="none" autocomplete="username" maxlength="24" placeholder="e.g. shrutik10">
         <span class="hint">${USERNAME_HELP}</span></div>
       <div class="field"><label for="r-pass">Create a password</label><input id="r-pass" name="password" type="password" required minlength="${MIN_PASSWORD}" autocomplete="new-password">
@@ -45,7 +45,7 @@ export function vOnboard() {
   const p = meP();
   const posOpts = POS.map(x => [x, POS_NAME[x]]);
   const optional = [["", "None"], ...posOpts];
-  return `<div class="auth">${hero("You're in! 🎉", "One last thing: fill in your player card so hosts can pick fair teams.")}
+  return `<div class="auth">${hero("You're in!", "One last thing: fill in your player card so hosts can pick fair teams.")}
     <div class="card auth-card">
       <div class="steps" aria-label="Step 2 of 2"><span class="done"></span><span class="on"></span></div>
       <form data-form="onboard" class="stack">
@@ -59,7 +59,7 @@ export function vOnboard() {
         <div class="field"><label for="f-inj">Fitness status</label>${sel("inj", FITNESS, "fit")}
           <span class="hint">You can change this any time from your profile.</span></div>
         <p class="err" id="form-err" role="alert"></p>
-        <button class="btn primary wide lg" type="submit">Let's play ⚽</button>
+        <button class="btn primary wide lg" type="submit">Let's play ${ICON.ball}</button>
         <p class="muted small center">Signed up as <b>${esc(p.username)}</b> · <a href="#" class="link" data-act="logout">Log out</a></p>
       </form>
     </div></div>`;

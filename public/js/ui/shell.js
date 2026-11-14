@@ -17,7 +17,7 @@ export function shell(body, activeTab) {
 }
 
 /* Centered single-card screen used for loading and error states */
-export function statusScreen(emoji, title, text) {
-  return `<div class="status"><div class="status-ball ${emoji === "⚽" ? "spin" : ""}" aria-hidden="true">${emoji}</div>
+export function statusScreen(icon, title, text) {
+  return `<div class="status"><div class="status-ball ${icon === "ball" ? "spin" : ""}" aria-hidden="true">${ICON[icon]}</div>
     <h2>${esc(title)}</h2><p class="muted">${text}</p></div>`;
 }

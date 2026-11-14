@@ -3,16 +3,17 @@ import { S, UI, P } from "../../../core/state.js";
 import { esc } from "../../../lib/utils.js";
 import { derive } from "../../../domain/derive.js";
 import { inMatch, teamLabel } from "../../../domain/match.js";
+import { ICON } from "../../../ui/icons.js";
 import { avatar, emptyState, rBadge } from "../../../ui/components.js";
 import { teamCol } from "../teamcol.js";
 
 function timeline(m) {
   const evs = (m.events || []).slice().sort((a, b) => (a.min ?? 999) - (b.min ?? 999) || a.at - b.at);
-  if (!evs.length) return emptyState("🥅", m.status === "live" ? "No goals yet." : "No goal times recorded.");
+  if (!evs.length) return emptyState("goal", m.status === "live" ? "No goals yet." : "No goal times recorded.");
   let a = 0, b = 0;
   return `<div class="card flush">${evs.map(e => {
     if (e.side === "A") a++; else b++;
-    const who = `⚽ <b>${e.pid ? esc((P(e.pid) || {}).name || "Removed player") : "Other goal"}</b>`;
+    const who = `${ICON.ball} <b>${e.pid ? esc((P(e.pid) || {}).name || "Removed player") : "Other goal"}</b>`;
     const sc = `<span class="sc2">${a}-${b}</span>`;
     return `<div class="ev"><div class="l">${e.side === "A" ? who + " " + sc : ""}</div><div class="m"><span>${e.min ? e.min + "'" : "–"}</span></div><div class="r">${e.side === "B" ? sc + " " + who : ""}</div></div>`;
   }).join("")}</div>`;
@@ -44,9 +45,9 @@ export function tabSummary(m, ctl) {
   const motm = P(mi.motm);
   const editing = UI.editRes[m.id];
   const needRate = inMatch(m, S.me) && !S.ratings[m.id + "_" + S.me];
-  return `${needRate ? `<section class="card callout"><span class="bubble" aria-hidden="true">⭐</span><div class="callout-t"><b>Rate the players from this match</b></div>
+  return `${needRate ? `<section class="card callout"><span class="bubble" aria-hidden="true">${ICON.star}</span><div class="callout-t"><b>Rate the players from this match</b></div>
         <button class="btn accent sm" data-act="mtab" data-m="${mid}" data-t="ratings">Rate now</button></section>` : ""}
-    ${motm ? `<section class="card motm spread"><div class="row">${avatar(motm, 52)}<div><span class="eyebrow">🏆 Man of the match</span><div class="motm-n">${esc(motm.name)}</div></div></div>${rBadge(mi.avg[mi.motm].avg, { star: true, lg: true })}</section>` : ""}
+    ${motm ? `<section class="card motm spread"><div class="row">${avatar(motm, 52)}<div><span class="eyebrow">${ICON.trophy} Man of the match</span><div class="motm-n">${esc(motm.name)}</div></div></div>${rBadge(mi.avg[mi.motm].avg, { star: true, lg: true })}</section>` : ""}
     <section><div class="sec-h"><h2>Goals</h2>${ctl ? `<button class="btn sm" data-act="editRes" data-m="${mid}">${editing ? "Done editing" : "Fix score or scorers"}</button>` : ""}</div>
       ${editing ? `${extrasCtl(m)}<div style="margin-top:10px">${teams("ended")}</div>` : timeline(m)}</section>`;
 }

@@ -3,6 +3,7 @@ import { POS_NAME, MAX_STRIKES } from "../config/constants.js";
 import { esc, f1, fmtDate, hashStr } from "../lib/utils.js";
 import { ratingOf, suspended } from "../domain/derive.js";
 import { teamLabel } from "../domain/match.js";
+import { ICON } from "./icons.js";
 
 /* Initials avatars stay inside the brand palette: [background, text] */
 const AVATAR_TONES = [
@@ -41,7 +42,7 @@ export function rBadge(v, opts = {}) {
   if (v == null) return `<span class="rb none ${opts.lg ? "lg" : ""}">–</span>`;
   const cls = opts.seed ? "seed" : v >= 8.5 ? "top" : v >= 7 ? "hi" : v >= 6 ? "mid" : "lo";
   const title = opts.seed ? "Starting score (no peer ratings yet)" : "Rating";
-  return `<span class="rb ${cls} ${opts.lg ? "lg" : ""}" title="${title}">${f1(v)}${opts.star ? " ★" : ""}</span>`;
+  return `<span class="rb ${cls} ${opts.lg ? "lg" : ""}" title="${title}">${f1(v)}${opts.star ? ICON.star : ""}</span>`;
 }
 export const playerBadge = (pid, lg) => { const r = ratingOf(pid); return rBadge(r.v, { seed: !r.peer, lg }); };
 
@@ -63,4 +64,5 @@ export const teamTag = (m, side) => `${teamDot(side)}${esc(teamLabel(m, side))}`
 export const sel = (name, opts, cur, attrs = "") => `<select id="f-${name}" name="${name}" ${attrs}>${opts.map(([v, l]) =>
   `<option value="${esc(v)}" ${String(v) === String(cur ?? "") ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
 
-export const emptyState = (emoji, html) => `<div class="empty"><span class="empty-emoji" aria-hidden="true">${emoji}</span><p>${html}</p></div>`;
+/* `icon` is a key of ICON */
+export const emptyState = (icon, html) => `<div class="empty"><span class="empty-ic" aria-hidden="true">${ICON[icon]}</span><p>${html}</p></div>`;

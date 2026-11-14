@@ -34,7 +34,7 @@ function penaltyList(pid) {
 export function vPlayer(pid) {
   const p = P(pid);
   const back = `<a class="back" href="#players">${ICON.back} Players</a>`;
-  if (!p) return `${back}<section>${emptyState("🤷", "Player not found.")}</section>`;
+  if (!p) return `${back}<section>${emptyState("help", "Player not found.")}</section>`;
   const isMe = pid === S.me, admin = isAdmin();
   const s = derive().all[pid] || { mp: 0, w: 0, d: 0, l: 0, goals: 0, motm: 0, hist: [], avg: null, form: [], rN: 0 };
   const r = ratingOf(pid), inj = p.injury || {}, pen = penOf(pid);
@@ -69,7 +69,7 @@ export function vPlayer(pid) {
         const m = S.matches[h.mid];
         return `<a class="mrow hist" href="#match-${esc(h.mid)}"><span class="form"><i class="${h.res}">${h.res}</i></span>
           <span class="side">${fmtDate(h.date)} <span class="muted small">${teamDot(h.side)}${esc(teamLabel(m, h.side))} ${h.sA}-${h.sB}</span></span>
-          <span class="small">${h.goals ? "⚽ " + h.goals : ""}</span>${h.rating != null ? rBadge(h.rating, { star: h.motm }) : rBadge(null)}</a>`;
-      }).join("")}</div>` : emptyState("👟", "No matches played yet.")}
+          <span class="small gcount">${h.goals ? ICON.ball + h.goals : ""}</span>${h.rating != null ? rBadge(h.rating, { star: h.motm }) : rBadge(null)}</a>`;
+      }).join("")}</div>` : emptyState("ball", "No matches played yet.")}
     </section>`;
 }

@@ -1,6 +1,6 @@
 /* Match centre: scoreboard header, host tools and the tab bar. Each tab lives in ./tabs. */
 import { S, UI, P, isAdmin } from "../../core/state.js";
-import { esc, fmtLong, fmtTime } from "../../lib/utils.js";
+import { esc, firstName, fmtLong, fmtTime } from "../../lib/utils.js";
 import { derive, rosterOf } from "../../domain/derive.js";
 import { canControl, inMatch, minuteOf, payOf, teamLabel } from "../../domain/match.js";
 import { ICON } from "../../ui/icons.js";
@@ -35,7 +35,7 @@ function matchHead(m) {
   const team = side => {
     const cap = P(m["cap" + side]), label = teamLabel(m, side);
     return `<div class="tm"><span class="crest ${side}">${esc(label.trim()[0].toUpperCase())}</span><span class="tname">${esc(label)}</span>
-      <span class="capn">${cap ? "Capt. " + esc(cap.name) : "&nbsp;"}</span></div>`;
+      <span class="capn">${cap ? "Capt. " + esc(firstName(cap)) : "&nbsp;"}</span></div>`;
   };
   const score = m.status === "setup" ? `<span class="vs">VS</span>` : `<span>${mi.sA}</span><i>-</i><span>${mi.sB}</span>`;
   return `<div class="mhead"><div class="meta">${[fmtLong(m.date), m.venue || "Venue not set", "Host " + ((P(m.hostId) || {}).name || "Unknown")].map(esc).join("<span>·</span>")}</div>
@@ -46,7 +46,7 @@ function matchHead(m) {
 export function vMatch(id) {
   const m = S.matches[id];
   const back = `<a class="back" href="#matches">${ICON.back} Matches</a>`;
-  if (!m) return `${back}<section>${emptyState("🤷", "This match was deleted or doesn't exist.")}</section>`;
+  if (!m) return `${back}<section>${emptyState("help", "This match was deleted or doesn't exist.")}</section>`;
   const ctl = canControl(m);
   const tabs = matchTabs(m);
   const tools = ctl ? `<div class="row tools">
