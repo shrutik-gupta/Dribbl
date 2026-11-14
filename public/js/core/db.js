@@ -25,7 +25,7 @@ const normalise = {
   matches: (id, d) => Object.assign({
     teamA: [], teamB: [], nameA: "", nameB: "", pos: {}, goals: {}, events: [], extraA: 0, extraB: 0,
     capA: "", vcA: "", capB: "", vcB: "", venue: "", status: "setup",
-    date: todayStr(), time: "20:00", cost: 0, noShows: {}, waived: {}
+    date: todayStr(), time: "20:00", cost: 0, noShows: {}, waived: {}, private: false, code: ""
   }, clone(d), { id })
 };
 

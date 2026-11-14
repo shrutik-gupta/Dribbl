@@ -3,7 +3,7 @@ import { S, P, activePlayers, isAdmin } from "../../core/state.js";
 import { MAX_STRIKES, CLEAR_AFTER, POS_NAME } from "../../config/constants.js";
 import { esc, f1, fmtDate } from "../../lib/utils.js";
 import { derive, penOf, ratingOf } from "../../domain/derive.js";
-import { teamLabel } from "../../domain/match.js";
+import { hasAccess, teamLabel } from "../../domain/match.js";
 import { ICON } from "../../ui/icons.js";
 import { accountBtns } from "../admin/view.js";
 import { avatar, emptyState, playerBadge, posBadges, rBadge, statusPill, strikes, tagBadge, teamDot } from "../../ui/components.js";
@@ -39,7 +39,7 @@ export function vPlayer(pid) {
   const isMe = pid === S.me, admin = isAdmin();
   const s = derive().all[pid] || { mp: 0, w: 0, d: 0, l: 0, goals: 0, motm: 0, hist: [], avg: null, form: [], rN: 0 };
   const r = ratingOf(pid), inj = p.injury || {}, pen = penOf(pid);
-  const recent = s.hist.slice().reverse().slice(0, 10);
+  const recent = s.hist.filter(h => hasAccess(S.matches[h.mid])).reverse().slice(0, 10);
   const positions = [p.position, p.position2, p.position3].filter(Boolean).map(x => POS_NAME[x]).join(" · ");
 
   const buttons = [

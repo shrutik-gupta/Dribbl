@@ -23,6 +23,14 @@ Note: `npm run dev` talks to the real Firestore database named in `public/js/con
 
 The first person to sign up on an empty database becomes the admin. Admins can edit any player (starting score, captain tag, reset password), suspend or delete accounts, control any match and change club settings from **Me > Admin**.
 
+## Sharing, private matches and notifications
+
+- **Share:** every match page has a **Share** button. It opens the phone's share sheet (or copies the link) with a link like `https://dribbl.web.app/#match-<id>`. The address comes from `APP_URL` in `js/config/constants.js`; change it there if the site moves. Someone who opens the link logs in or signs up and lands on that match.
+- **Private matches:** when hosting, **Who can join** can be set to private. The match gets a 6-character join code (`private` and `code` on the match). Everyone still sees that a private match is coming up, but only its date, time and host. To open or join it you need the code: type it on the match's lock screen, or open a shared link, which carries the code (`?code=`). Hosts, admins and anyone already in the match never need the code. Scores of private matches are listed only for people who can open them; club-wide stats still count them.
+- **Notifications:** the bell in the header lists upcoming matches hosted by other players and shows a badge for ones you haven't seen. If the app is open when a match is hosted, a message pops up. These are in-app only: nothing is sent to a phone while the app is closed.
+
+The join code is checked in the app, like every other rule here (see Security below), so treat it as a way to keep a match among invited friends, not as a lock.
+
 ## Suspending and deleting accounts
 
 From **Me > Admin** (or any player's profile) an admin can:

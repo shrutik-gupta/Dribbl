@@ -1,8 +1,18 @@
-/* Hash router. Routes: matches, match-<id>, players, player-<id>, stats, graphs, me, admin */
+/* Hash router. Routes: matches, match-<id>, players, player-<id>, stats, graphs, me, admin.
+   A shared link to a private match carries its join code: #match-<id>?code=XXXXXX */
 import { UI } from "./state.js";
+import { rememberCode } from "../domain/match.js";
 import { render } from "./render.js";
 
-const current = () => (location.hash || "").slice(1) || "matches";
+function current() {
+  const [route, query] = ((location.hash || "").slice(1) || "matches").split("?");
+  const code = new URLSearchParams(query || "").get("code");
+  if (code && route.startsWith("match-")) {
+    rememberCode(route.slice(6), code);
+    history.replaceState(null, "", "#" + route);   // keep the code out of the address bar and history
+  }
+  return route;
+}
 
 export function initRouter() {
   UI.route = current();

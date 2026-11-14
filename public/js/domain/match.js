@@ -1,6 +1,7 @@
 /* Questions you can ask about a single match or a player's place in it. */
 import { S, P, isAdmin } from "../core/state.js";
-import { LATE_HOURS } from "../config/constants.js";
+import { APP_URL, LATE_HOURS } from "../config/constants.js";
+import { lsGet, lsSet } from "../lib/storage.js";
 import { firstName, possessive } from "../lib/utils.js";
 
 export const inMatch = (m, pid) => !!m && (m.teamA.includes(pid) || m.teamB.includes(pid));
@@ -23,3 +24,25 @@ export function teamLabel(m, side) {
   const cap = m && P(m["cap" + side]);
   return cap ? possessive(firstName(cap)) : "Team " + side;
 }
+
+/* ---------- private matches ----------
+   A private match has a join code. You can open and join it if you host it, are the admin,
+   are already part of it (any reply, or picked in a team), or have entered its code on this device. */
+const CODES_KEY = "dribbl.codes";
+const savedCodes = () => { try { return JSON.parse(lsGet(CODES_KEY) || "{}") || {}; } catch (e) { return {}; } };
+const cleanCode = c => String(c || "").trim().toUpperCase();
+
+export function rememberCode(mid, code) {
+  const o = savedCodes(); o[mid] = cleanCode(code);
+  lsSet(CODES_KEY, JSON.stringify(o));
+}
+export const codeMatches = (m, code) => !!m.code && cleanCode(code) === m.code;
+
+export function hasAccess(m) {
+  if (!m || !m.private) return true;
+  if (!S.me) return false;
+  return m.hostId === S.me || isAdmin() || inMatch(m, S.me) || !!rsvpOf(m.id, S.me) || codeMatches(m, savedCodes()[m.id]);
+}
+
+/* Link to share. For a private match the code rides along, so the friend doesn't have to type it. */
+export const matchLink = m => APP_URL + "/#match-" + m.id + (m.private && m.code ? "?code=" + m.code : "");

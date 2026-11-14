@@ -3,7 +3,7 @@ import { S, P, meP } from "../../core/state.js";
 import { MAX_STRIKES, CLEAR_AFTER } from "../../config/constants.js";
 import { esc, firstName, fmtDate, fmtLong, fmtTime, parseD, rupees, todayStr } from "../../lib/utils.js";
 import { derive, penOf, suspended, squadOf, perHead } from "../../domain/derive.js";
-import { inMatch, injured, kickoff, minuteOf, payOf, rsvpOf } from "../../domain/match.js";
+import { hasAccess, inMatch, injured, kickoff, minuteOf, payOf, rsvpOf } from "../../domain/match.js";
 import { ICON } from "../../ui/icons.js";
 import { avatarStack, emptyState, strikes, teamTag } from "../../ui/components.js";
 
@@ -24,17 +24,22 @@ function mrow(m) {
 }
 
 function nextCard(m) {
-  const squad = squadOf(m).map(P), d = parseD(m.date);
-  const sub = [m.venue || "Venue not set", "Host " + firstName(P(m.hostId)), m.cost ? rupees(m.cost) + " turf" : ""].filter(Boolean).join(" · ");
-  return `<article class="next">
+  /* A private match the viewer hasn't unlocked shows only when it is and who hosts it */
+  const open = hasAccess(m), d = parseD(m.date);
+  const squad = open ? squadOf(m).map(P) : [];
+  const sub = open ? [m.private ? "Private" : "", m.venue || "Venue not set", "Host " + firstName(P(m.hostId)), m.cost ? rupees(m.cost) + " turf" : ""].filter(Boolean).join(" · ")
+    : "Private match · Host " + firstName(P(m.hostId));
+  return `<article class="next ${open ? "" : "locked"}">
     <a class="next-top" href="#match-${esc(m.id)}">
       <span class="datechip"><b>${d.getDate()}</b><span>${d.toLocaleDateString("en-IN", { month: "short" })}</span></span>
       <span class="next-info"><b>${d.toLocaleDateString("en-IN", { weekday: "long" })} · ${fmtTime(m.time)}</b><span>${esc(sub)}</span></span>
       <span class="next-go" aria-hidden="true">${ICON.arrow}</span>
     </a>
-    <div class="next-bot">
+    <div class="next-bot">${open ? `
       <span class="crowd">${squad.length ? avatarStack(squad, 5, 30) : ""}<b>${squad.length ? squad.length + " in" : "Be the first in"}</b></span>
-      ${rsvpButtons(m)}
+      ${rsvpButtons(m)}` : `
+      <span class="crowd">${ICON.lock}<b>Join code needed</b></span>
+      <a class="btn sm accent" href="#match-${esc(m.id)}">Enter code</a>`}
     </div></article>`;
 }
 
@@ -44,8 +49,9 @@ const callout = (icon, title, text, action, bad) => `<section class="card callou
 export function vMatches() {
   const all = Object.values(S.matches);
   const upcoming = all.filter(m => m.status === "setup").sort((a, b) => kickoff(a) - kickoff(b));
-  const live = all.filter(m => m.status === "live");
-  const ended = all.filter(m => m.status === "ended").sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.endedAt || 0) - (a.endedAt || 0)));
+  /* Scores of private matches are only listed for people who can open them */
+  const live = all.filter(m => m.status === "live" && hasAccess(m));
+  const ended = all.filter(m => m.status === "ended" && hasAccess(m)).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.endedAt || 0) - (a.endedAt || 0)));
   const toRate = ended.filter(m => inMatch(m, S.me) && !S.ratings[m.id + "_" + S.me]).slice(0, 3);
   const toPay = [...live, ...ended].filter(m => m.cost > 0 && m.hostId !== S.me && inMatch(m, S.me) && !payOf(m.id, S.me)).slice(0, 3);
   const pen = penOf(S.me), info = derive().info;

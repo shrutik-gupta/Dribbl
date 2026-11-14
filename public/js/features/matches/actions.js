@@ -3,14 +3,19 @@ import { S, UI, P } from "../../core/state.js";
 import { render } from "../../core/render.js";
 import { go } from "../../core/router.js";
 import { delDoc, mutateMatch, setDoc } from "../../core/db.js";
-import { LATE_HOURS, MAX_STRIKES, TEAM_NAME_MAX } from "../../config/constants.js";
-import { esc, todayStr, uid } from "../../lib/utils.js";
+import { APP_NAME, CODE_LENGTH, LATE_HOURS, MAX_STRIKES, TEAM_NAME_MAX } from "../../config/constants.js";
+import { esc, firstName, fmtLong, fmtTime, joinCode, todayStr, uid } from "../../lib/utils.js";
 import { derive, liveTeams, penOf, squadOf, suspended, ratingOf } from "../../domain/derive.js";
-import { injured, isLateNow, minuteOf, payOf, rsvpOf, teamLabel } from "../../domain/match.js";
+import { codeMatches, hasAccess, injured, isLateNow, matchLink, minuteOf, payOf, rememberCode, rsvpOf, teamLabel } from "../../domain/match.js";
 import { balanceTeams, suggestCaps } from "../../domain/balance.js";
-import { closeModal, confirmBox, modal, openModal } from "../../ui/modal.js";
+import { closeModal, confirmBox, formErr, modal, openModal } from "../../ui/modal.js";
 import { toast } from "../../ui/toast.js";
 import { matchForm, readMatchForm } from "./forms.js";
+
+async function copyText(text, done, failed) {
+  try { await navigator.clipboard.writeText(text); toast(done); }
+  catch (e) { toast(failed); }
+}
 
 function rsvpWrite(mid, pid, status, extra) {
   const rid = mid + "_" + pid, cur = S.rsvps[rid] || {};
@@ -21,10 +26,31 @@ export const actions = {
   mtab(el) { UI.mtab[el.dataset.m] = el.dataset.t; render(); },
   openTab(el) { UI.mtab[el.dataset.m] = el.dataset.t; go("match-" + el.dataset.m); },
 
+  /* ----- sharing ----- */
+  async shareMatch(el) {
+    const m = S.matches[el.dataset.m]; if (!m) return;
+    const url = matchLink(m);
+    const text = `${firstName(P(m.hostId))} is hosting a match on ${fmtLong(m.date)} at ${fmtTime(m.time)}${m.venue ? ", " + m.venue : ""}. Join on ${APP_NAME}${m.private ? " (code " + m.code + ")" : ""}:`;
+    const data = { title: APP_NAME + " match", text, url };
+    /* Android app: native share sheet (Capacitor Share plugin). Browsers: Web Share where it exists. */
+    const native = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share;
+    try {
+      if (native) return await native.share(Object.assign({ dialogTitle: "Share match" }, data));
+      if (navigator.share) return await navigator.share(data);
+    } catch (e) {
+      if (/abort|cancel/i.test(String(e && e.name) + " " + String(e && e.message))) return;   // user closed the share sheet
+    }
+    copyText(text + " " + url, "Match link copied. Paste it in your group chat.", "Couldn't copy the link. Share this page's address instead.");
+  },
+  copyCode(el) {
+    const m = S.matches[el.dataset.m];
+    if (m && m.code) copyText(m.code, "Join code copied.", "Couldn't copy. The code is " + m.code + ".");
+  },
+
   /* ----- hosting ----- */
   hostMatch() {
     const last = Object.values(S.matches).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0] || {};
-    openModal("Host a match", matchForm({ date: todayStr(), time: last.time || "20:00", venue: last.venue || S.config.venue || "", cost: last.cost || "", nameA: "", nameB: "" }) +
+    openModal("Host a match", matchForm({ date: todayStr(), time: last.time || "20:00", venue: last.venue || S.config.venue || "", cost: last.cost || "", nameA: "", nameB: "", private: false }) +
       `<p class="muted small">You'll control this match: teams, captains, score and payments. Players see it on their Matches page and tap "I'm in".</p>
        <button class="btn primary wide" type="submit">Create match</button>`, "newMatch");
   },
@@ -55,6 +81,7 @@ export const actions = {
   async rsvp(el) {
     const mid = el.dataset.m, s = el.dataset.s, m = S.matches[mid];
     if (!m || m.status !== "setup") return toast("This match has already started.");
+    if (!hasAccess(m)) return toast("This match is private. Enter its join code first.");
     if (suspended(S.me)) return toast("You're suspended. Ask the admin to reapprove you.");
     const cur = rsvpOf(mid, S.me);
     if (cur && cur.status === s) return;
@@ -195,7 +222,9 @@ export const changes = {
 export const forms = {
   async newMatch(fd) {
     const id = uid("m");
-    const doc = Object.assign(readMatchForm(fd), {
+    const details = readMatchForm(fd);
+    const doc = Object.assign(details, {
+      code: details.private ? joinCode(CODE_LENGTH) : "",
       hostId: S.me, status: "setup", teamA: [], teamB: [], pos: {}, capA: "", vcA: "", capB: "", vcB: "",
       goals: {}, events: [], extraA: 0, extraB: 0, noShows: {}, waived: {}, createdAt: Date.now()
     });
@@ -206,8 +235,17 @@ export const forms = {
   },
   async matchDetails(fd) {
     const v = readMatchForm(fd);
-    await mutateMatch(modal.state.mid, m => { Object.assign(m, v); });
+    /* A match keeps its code once it has one, so links shared earlier keep working */
+    await mutateMatch(modal.state.mid, m => { Object.assign(m, v); if (m.private && !m.code) m.code = joinCode(CODE_LENGTH); });
     closeModal();
+  },
+  /* The lock screen of a private match */
+  joinCode(fd) {
+    const mid = String(fd.get("mid")), m = S.matches[mid];
+    if (!m) return formErr("This match no longer exists.");
+    if (!codeMatches(m, fd.get("code"))) return formErr("That code doesn't match. Check it with the host.");
+    rememberCode(mid, fd.get("code"));
+    render();
   },
   async teamNames(fd) {
     const name = k => String(fd.get(k) || "").trim().slice(0, TEAM_NAME_MAX);

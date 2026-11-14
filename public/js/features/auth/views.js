@@ -16,6 +16,7 @@ export function vAuth() {
   const tab = (id, label) => `<button type="button" role="tab" aria-selected="${UI.authMode === id}" class="${UI.authMode === id ? "on" : ""}" data-act="authMode" data-k="${id}">${label}</button>`;
 
   const kicked = meP() && meP().active === false;
+  const invited = UI.route.startsWith("match-") ? `<div class="note good"><b>You've been invited to a match.</b> Log in or sign up to see it and join.</div>` : "";
   const login = `<form data-form="login" class="stack">
       ${kicked ? `<div class="note bad">${SUSPENDED_MSG}</div>` : ""}
       <div class="field"><label for="l-user">Username</label><input id="l-user" name="username" required autocapitalize="none" autocomplete="username" placeholder="e.g. shrutik10"></div>
@@ -38,6 +39,7 @@ export function vAuth() {
 
   return `<div class="auth">${hero(esc(clubName()), "Your weekly kickabout, sorted. Fair teams, live scores and bragging rights.")}
     <div class="card auth-card">
+      ${invited}
       <div class="switch" role="tablist" aria-label="Log in or sign up">${tab("login", "Log in")}${tab("register", "Sign up")}</div>
       ${reg ? register : login}
     </div></div>`;

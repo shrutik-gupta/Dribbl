@@ -25,6 +25,16 @@
 .next .seg button.on-in { color: var(--lime-ink); }
 .next .seg button.on-out { background: #fff; color: #141917; }
 .next .pill { background: rgba(0, 0, 0, .25); color: #fff; }
+/* a private match the viewer hasn't unlocked */
+.next.locked { background: linear-gradient(150deg, #2c3530, #1a201d); box-shadow: 0 6px 18px rgba(20, 25, 23, .18); }
+.next.locked .datechip { background: #e9eeeb; color: #141917; }
+
+/* ---------- private match lock screen ---------- */
+.lockbox { margin-top: 14px; max-width: 460px; margin-left: auto; margin-right: auto; text-align: center; display: flex; flex-direction: column; gap: 10px; }
+.lockbox .empty-ic { color: var(--accent-text); margin: 0; }
+.lockbox form { text-align: left; margin-top: 6px; }
+.field input.code-in { text-align: center; text-transform: uppercase; font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: .28em; }
+.field input.code-in::placeholder { font-family: var(--body); font-weight: 500; font-size: 15px; letter-spacing: 0; text-transform: none; }
 
 /* ---------- match rows ---------- */
 .mgroup { background: var(--surface); border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow); }

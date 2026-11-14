@@ -10,6 +10,7 @@ import { vStats } from "./features/stats/view.js";
 import { vGraphs } from "./features/graphs/view.js";
 import { vAdmin } from "./features/admin/view.js";
 import { destroyCharts, drawCharts } from "./features/graphs/charts.js";
+import { watchNewMatches } from "./features/notify/actions.js";
 
 let lastHtml = "";
 
@@ -45,6 +46,7 @@ export function renderApp() {
   if (!S.me || !me || me.active === false) return paint(vAuth());
   if (!isOnboarded(me)) return paint(vOnboard());
 
+  watchNewMatches();
   const [body, tab] = route();
   if (paint(shell(body, tab))) drawCharts();
 }

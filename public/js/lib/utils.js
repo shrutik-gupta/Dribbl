@@ -3,6 +3,12 @@
 const ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ESC[c]);
 
+/* Random join code for a private match. Leaves out look-alikes (0/O, 1/I/L). */
+export function joinCode(n = 6) {
+  const A = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  return Array.from(crypto.getRandomValues(new Uint8Array(n)), x => A[x % A.length]).join("");
+}
+
 export const uid = prefix => prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 export const pad = n => String(n).padStart(2, "0");
 export const sleep = ms => new Promise(r => setTimeout(r, ms));

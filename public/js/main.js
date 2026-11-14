@@ -13,8 +13,9 @@ import * as players from "./features/players/actions.js";
 import * as stats from "./features/stats/view.js";
 import * as graphs from "./features/graphs/view.js";
 import * as admin from "./features/admin/actions.js";
+import * as notify from "./features/notify/actions.js";
 
-[modal, auth, matches, players, stats, graphs, admin].forEach(register);
+[modal, auth, matches, players, stats, graphs, admin, notify].forEach(register);
 
 /* Android app only: the phone's back button asks here first (see android/.../MainActivity.java).
    Return true when the press was used up, here to close an open modal. */

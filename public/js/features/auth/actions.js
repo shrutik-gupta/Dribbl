@@ -13,6 +13,11 @@ import { readPositions } from "../players/forms.js";
 
 export const SUSPENDED_MSG = "This account is suspended. Ask your club admin to restore it.";
 
+/* After logging in, someone who arrived through a shared match link stays on that match */
+function land() {
+  if (UI.route.startsWith("match-")) render(); else go("matches");
+}
+
 function startSession(pid) {
   S.me = pid;
   lsSet(SESSION_KEY, pid);
@@ -48,7 +53,7 @@ export const forms = {
     if (!await savePlayer(id, player)) return;
     S.players[id] = Object.assign({}, player, { id });
     startSession(id);
-    go("matches"); render();
+    land(); render();
   },
 
   /* Step 2: the player card. */
@@ -61,7 +66,7 @@ export const forms = {
     Object.assign(p, pos, { name: nickname, onboarded: true, injury: { status: fd.get("inj") || "fit", note: "", returnDate: "" } });
     if (!await savePlayer(p.id, p)) return;
     S.players[p.id] = p;
-    go("matches"); render();
+    land(); render();
     toast(`Welcome to the squad, ${nickname}!`);
   },
 
@@ -74,7 +79,7 @@ export const forms = {
     /* Only someone who knows the password is told the account is suspended */
     if (p.active === false) return formErr(SUSPENDED_MSG);
     startSession(p.id);
-    go("matches"); render();
+    land(); render();
   },
 
   async password(fd) {
