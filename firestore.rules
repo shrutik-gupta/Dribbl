@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Only the app's own collections can be read or written.
+    // Anyone who has the website link can reach this data, so keep the link within your group.
+    match /{col}/{id} {
+      allow read, write: if col in ['players', 'matches', 'ratings', 'rsvps', 'payments', 'payinfo', 'config'];
+    }
+  }
+}

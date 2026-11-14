@@ -1,0 +1,83 @@
+/* App frame: brand bar, navigation dock, page headers, status and auth screens. */
+
+/* ---------- brand bar ---------- */
+/* No backdrop-filter here: it would trap the fixed nav dock inside the header. */
+.top { position: sticky; top: 0; z-index: 15; background: var(--bg); }
+.top-in { display: flex; align-items: center; gap: 14px; min-height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-right: auto; min-width: 0; }
+.brand-ball { width: 38px; height: 38px; border-radius: 13px; background: var(--primary); color: var(--primary-ink); display: flex; align-items: center; justify-content: center; transform: rotate(-8deg); transition: transform .5s var(--bounce); }
+.brand:hover .brand-ball { transform: rotate(172deg); }
+.brand-ball svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.brand-name { font-family: var(--display); font-weight: 800; font-size: 21px; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.me-chip { display: flex; border-radius: 50%; text-decoration: none; transition: transform .2s var(--bounce); }
+.me-chip:hover { transform: scale(1.08); }
+
+/* ---------- navigation: floating dock on phones ---------- */
+.tabs { display: flex; gap: 2px; }
+.tab { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; font-weight: 700; font-size: 11.5px; color: var(--muted); padding: 4px 6px; flex: 1; }
+.tab-ic { display: flex; align-items: center; justify-content: center; width: 52px; height: 32px; border-radius: 99px; transition: background .2s, transform .35s var(--bounce); }
+.tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.tab.on { color: var(--ink); }
+.tab.on .tab-ic { background: var(--lime); color: var(--lime-ink); transform: translateY(-2px) scale(1.05); }
+.tab:active .tab-ic { transform: scale(.9); }
+
+@media (max-width: 759px) {
+  .tabs {
+    position: fixed; z-index: 20; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom));
+    max-width: 480px; margin: 0 auto; padding: 8px 6px 6px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 26px;
+    box-shadow: 0 10px 30px rgba(20, 25, 23, .16);
+  }
+}
+@media (min-width: 760px) {
+  .tabs { background: var(--surface); border-radius: 99px; padding: 5px; box-shadow: var(--shadow); }
+  .tab { flex-direction: row; gap: 6px; font-size: 14.5px; padding: 7px 14px 7px 8px; border-radius: 99px; flex: none; }
+  .tab-ic { width: 30px; height: 30px; }
+  .tab svg { width: 18px; height: 18px; }
+  .tab.on { background: var(--surface-2); }
+  .tab.on .tab-ic { transform: none; }
+  .me-chip { display: none; }
+}
+
+/* ---------- page headers ---------- */
+.page { animation: rise .28s ease-out; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+.pagehead { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
+.pagehead p { margin-top: 4px; max-width: 60ch; }
+.hello { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
+.hello h1 { font-size: clamp(32px, 9vw, 44px); margin: 2px 0 4px; }
+.wave { display: inline-block; transform-origin: 70% 70%; animation: wave 1.8s ease-in-out 1; }
+@keyframes wave { 0%, 60%, 100% { transform: rotate(0); } 10%, 30% { transform: rotate(16deg); } 20%, 40% { transform: rotate(-8deg); } }
+.back { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--muted); font-weight: 700; font-size: 14px; margin-top: 10px; padding: 6px 12px 6px 8px; border-radius: 99px; }
+.back:hover { background: var(--surface-2); color: var(--ink); }
+.back svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.sec-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.sec-h h2 { font-size: 19px; display: flex; align-items: center; gap: 8px; }
+
+/* ---------- loading / error screen ---------- */
+.status { min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; padding: 24px; max-width: 420px; margin: 0 auto; }
+.status-ball { font-size: 54px; line-height: 1; margin-bottom: 8px; }
+.status-ball.spin { animation: dribble 1s cubic-bezier(.5, 0, .5, 1) infinite alternate; }
+@keyframes dribble { from { transform: translateY(-22px) rotate(0); } to { transform: translateY(8px) rotate(180deg); } }
+
+/* ---------- log in / sign up / player card ---------- */
+.auth { max-width: 440px; margin: 0 auto; padding: 0 16px 40px; }
+.auth-hero { position: relative; overflow: hidden; color: #fff; text-align: center; padding: 34px 24px 60px; margin: 0 -16px;
+  background: linear-gradient(160deg, #01935c, #017a4c); border-radius: 0 0 36px 36px; }
+.auth-hero h1 { position: relative; font-size: 34px; }
+.auth-hero p { position: relative; margin-top: 8px; opacity: .9; max-width: 30ch; margin-inline: auto; }
+.auth-pitch { position: relative; width: 84px; height: 84px; margin: 0 auto 16px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .35); display: flex; align-items: center; justify-content: center; }
+.auth-pitch::before { content: ""; position: absolute; left: -200px; right: -200px; top: 50%; border-top: 2px solid rgba(255, 255, 255, .2); }
+.auth-ball { position: relative; width: 52px; height: 52px; border-radius: 50%; background: var(--lime); color: var(--lime-ink); display: flex; align-items: center; justify-content: center; animation: bob 1.6s ease-in-out infinite; }
+.auth-ball svg { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+@keyframes bob { 0%, 100% { transform: translateY(-5px) rotate(-10deg); } 50% { transform: translateY(5px) rotate(14deg); } }
+.auth-card { position: relative; margin-top: -34px; padding: 20px; }
+@media (min-width: 480px) { .auth { padding-top: 24px; } .auth-hero { margin: 0; border-radius: 36px; } }
+
+.switch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface-2); border-radius: 99px; margin-bottom: 18px; }
+.switch button { border: 0; background: none; min-height: 40px; border-radius: 99px; font-weight: 700; color: var(--muted); cursor: pointer; transition: background .2s, color .2s; }
+.switch button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 4px rgba(20, 25, 23, .12); }
+.steps { display: flex; gap: 6px; margin-bottom: 18px; }
+.steps span { flex: 1; height: 6px; border-radius: 99px; background: var(--surface-2); }
+.steps .done { background: var(--primary); }
+.steps .on { background: var(--lime); }

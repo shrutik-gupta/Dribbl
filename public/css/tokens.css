@@ -1,0 +1,63 @@
+/* Design tokens. The whole look comes from two greens and a family of green-tinted greys.
+   Red and amber appear only where meaning needs them (errors, penalties, warnings). */
+:root {
+  /* brand */
+  --brand: #01935c;
+  --lime: #61df6e;
+  --lime-ink: #06301c;
+
+  /* greys */
+  --bg: #f2f4f3;
+  --surface: #ffffff;
+  --surface-2: #eef1ef;
+  --ink: #141917;
+  --muted: #616b66;
+  --line: #e0e5e2;
+
+  /* roles */
+  --primary: #01935c;
+  --primary-ink: #ffffff;
+  --primary-deep: #016b43;      /* the "ledge" under chunky buttons */
+  --accent-text: #017a4c;       /* green text that stays readable on light surfaces */
+  --tint: #e4f7e9;              /* soft green wash */
+  --chart: #01935c;
+  --teamA: #61df6e; --teamA-ink: #06301c;
+  --teamB: #232a26; --teamB-ink: #ffffff;
+  --good: #017a4c;
+  --warn: #9a6700;
+  --bad: #c9382c;
+
+  /* shape and type */
+  --r: 22px;
+  --r-sm: 14px;
+  --shadow: 0 1px 2px rgba(20, 25, 23, .04), 0 8px 24px rgba(20, 25, 23, .06);
+  --display: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bounce: cubic-bezier(.34, 1.56, .64, 1);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d110f;
+    --surface: #161b18;
+    --surface-2: #1f2622;
+    --ink: #eef2f0;
+    --muted: #98a39d;
+    --line: #29312d;
+
+    --primary: #61df6e;
+    --primary-ink: #06301c;
+    --primary-deep: #3aa94a;
+    --accent-text: #61df6e;
+    --tint: #12301f;
+    --chart: #61df6e;
+    --teamB: #e9eeeb; --teamB-ink: #141917;
+    --good: #61df6e;
+    --warn: #e2ad2f;
+    --bad: #f2776a;
+
+    --shadow: 0 0 0 1px var(--line);
+    color-scheme: dark;
+  }
+}

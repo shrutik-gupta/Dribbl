@@ -1,0 +1,46 @@
+/* Reset, typography and layout utilities. */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--body); font-size: 16px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  padding-bottom: calc(104px + env(safe-area-inset-bottom));
+}
+h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.01em; line-height: 1.1; margin: 0; text-wrap: balance; }
+h1 { font-size: 32px; font-weight: 800; }
+h2 { font-size: 21px; }
+h3 { font-size: 17px; }
+p { margin: 0; }
+a { color: inherit; }
+button, input, select { font: inherit; color: inherit; }
+img { max-width: 100%; }
+svg { flex: none; }
+:focus-visible { outline: 3px solid var(--lime); outline-offset: 2px; }
+
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+section { margin-top: 22px; }
+
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+.tiny { font-size: 12.5px; }
+.center { text-align: center; }
+.foot { margin-top: 8px; }
+.link { color: var(--accent-text); font-weight: 700; text-decoration: none; }
+.link:hover { text-decoration: underline; }
+.eyebrow { font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.stack.tight { gap: 6px; }
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.row.tight { gap: 6px; }
+.row.end { justify-content: flex-end; }
+.row.nowrap { flex-wrap: nowrap; }
+.row.tools { margin-top: 12px; gap: 8px; }
+.spread { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.grid2 { display: grid; gap: 14px; }
+@media (min-width: 520px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+
+@media (min-width: 760px) { body { padding-bottom: 48px; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
