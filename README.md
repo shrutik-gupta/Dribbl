@@ -8,6 +8,7 @@ Weekly turf football organiser: open sign-up, player cards, fair teams, no-show 
 npm run dev        # serves public/ at http://localhost:5173
 npm run check      # syntax-checks every module
 npm run deploy     # uploads Firestore rules and the site to Firebase
+npm run apk        # builds the Android app into dist/Dribbl.apk
 ```
 
 There is no build step. The app is plain HTML, CSS and JavaScript modules, so what is in `public/` is exactly what gets deployed. It must be served over http (not opened as a file), because browsers only load modules from a server.
@@ -30,6 +31,15 @@ From **Me > Admin** (or any player's profile) an admin can:
 - **Delete** an account: removes the player, their UPI details and their replies to matches that haven't finished. Finished matches keep their scores and ratings and show the player as "Removed player". This can't be undone.
 
 Admins can't suspend or delete themselves. This is separate from the penalty suspension (3 active penalties), which only stops a player joining matches.
+
+## Android app
+
+The Android app is the same `public/` folder wrapped in a native shell with [Capacitor](https://capacitorjs.com). There is no second codebase: `npm run apk` copies `public/` into the `android/` project and builds `dist/Dribbl.apk`, which you can send to anyone to install.
+
+- **One-time setup:** Java 21 and the Android SDK (`brew install openjdk@21` and `brew install --cask android-commandlinetools`, then `sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"`).
+- **The web files are inside the APK.** Deploying the website does not update installed apps; build and share a new APK after changes. Raise `versionCode` in `android/app/build.gradle` for each APK you share.
+- **Signing:** `npm run apk` makes a debug build signed with this computer's debug key (`~/.android/debug.keystore`). An update must be built with the same key, or phones will refuse it until the old app is uninstalled.
+- **Native bits:** `android/app/src/main/java/com/dribbl/app/MainActivity.java` handles the back button; icons and splash images live under `android/app/src/main/res/`. `capacitor.config.json` holds the app id (`com.dribbl.app`) and name.
 
 ## Team names
 
@@ -63,6 +73,9 @@ public/                    everything that is deployed
       stats/  graphs/  admin/
 firestore.rules            database access rules
 firebase.json              hosting and rules config
+capacitor.config.json      Android app id and name
+android/                   native Android shell (Capacitor)
+scripts/build-apk.sh       builds dist/Dribbl.apk
 ```
 
 ### How the code fits together

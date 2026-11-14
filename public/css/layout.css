@@ -2,7 +2,7 @@
 
 /* ---------- brand bar ---------- */
 /* No backdrop-filter here: it would trap the fixed nav dock inside the header. */
-.top { position: sticky; top: 0; z-index: 15; background: var(--bg); }
+.top { position: sticky; top: 0; z-index: 15; background: var(--bg); padding-top: var(--safe-top); }
 .top-in { display: flex; align-items: center; gap: 14px; min-height: 64px; min-width: 0; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-right: auto; min-width: 0; }
 /* The logo is white, so its tile stays brand green in both light and dark mode */
@@ -25,7 +25,7 @@
 
 @media (max-width: 759px) {
   .tabs {
-    position: fixed; z-index: 20; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom));
+    position: fixed; z-index: 20; left: 12px; right: 12px; bottom: calc(12px + var(--safe-bottom));
     max-width: 480px; margin: 0 auto; padding: 8px 6px 6px;
     background: var(--surface); border: 1px solid var(--line); border-radius: 26px;
     box-shadow: 0 10px 30px rgba(20, 25, 23, .16);
@@ -65,7 +65,7 @@
 
 /* ---------- log in / sign up / player card ---------- */
 .auth { max-width: 440px; margin: 0 auto; padding: 0 16px 40px; }
-.auth-hero { position: relative; overflow: hidden; color: #fff; text-align: center; padding: 34px 24px 60px; margin: 0 -16px;
+.auth-hero { position: relative; overflow: hidden; color: #fff; text-align: center; padding: calc(34px + var(--safe-top)) 24px 60px; margin: 0 -16px;
   background: linear-gradient(160deg, #01935c, #017a4c); border-radius: 0 0 36px 36px; }
 .auth-hero h1 { position: relative; font-size: clamp(26px, 9vw, 34px); }
 .auth-hero p { position: relative; margin-top: 8px; opacity: .9; max-width: 30ch; margin-inline: auto; }
@@ -74,7 +74,7 @@
 .auth-ball { position: relative; width: 62px; height: 62px; animation: bob 1.8s ease-in-out infinite; }
 @keyframes bob { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
 .auth-card { position: relative; margin-top: -34px; padding: 20px; }
-@media (min-width: 480px) { .auth { padding-top: 24px; } .auth-hero { margin: 0; border-radius: 36px; } }
+@media (min-width: 480px) { .auth { padding-top: calc(24px + var(--safe-top)); } .auth-hero { margin: 0; padding-top: 34px; border-radius: 36px; } }
 
 .switch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface-2); border-radius: 99px; margin-bottom: 18px; }
 .switch button { border: 0; background: none; min-height: 40px; border-radius: 99px; font-weight: 700; color: var(--muted); cursor: pointer; transition: background .2s, color .2s; }
@@ -91,7 +91,7 @@
   .tabs { left: 8px; right: 8px; padding: 8px 4px 6px; }
   .tab { padding: 4px 2px; font-size: 11px; }
   .auth { padding: 0 12px 32px; }
-  .auth-hero { margin: 0 -12px; padding: 28px 16px 56px; }
+  .auth-hero { margin: 0 -12px; padding: calc(28px + var(--safe-top)) 16px 56px; }
   .auth-card { padding: 16px; }
   .status { padding: 16px; }
 }

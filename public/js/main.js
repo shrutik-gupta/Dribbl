@@ -16,6 +16,14 @@ import * as admin from "./features/admin/actions.js";
 
 [modal, auth, matches, players, stats, graphs, admin].forEach(register);
 
+/* Android app only: the phone's back button asks here first (see android/.../MainActivity.java).
+   Return true when the press was used up, here to close an open modal. */
+window.__nativeBack = () => {
+  if (!document.getElementById("modal-root").innerHTML) return false;
+  modal.actions.closeModal();
+  return true;
+};
+
 async function boot() {
   setRenderer(renderApp);
   bindEvents();

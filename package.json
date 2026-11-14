@@ -8,6 +8,12 @@
     "dev": "npx serve public -l 5173",
     "check": "find public/js -name '*.js' -exec node --check {} +",
     "deploy": "firebase deploy",
-    "deploy:site": "firebase deploy --only hosting"
+    "deploy:site": "firebase deploy --only hosting",
+    "apk": "sh scripts/build-apk.sh"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/cli": "^8.6.2",
+    "@capacitor/core": "^8.6.2"
   }
 }

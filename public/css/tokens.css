@@ -27,6 +27,11 @@
   --warn: #9a6700;
   --bad: #c9382c;
 
+  /* Space taken by the phone's status bar and gesture bar. The Android app injects the
+     --safe-area-inset-* variables (older WebViews report wrong env() values); browsers use env(). */
+  --safe-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+
   /* shape and type */
   --r: 22px;
   --r-sm: 14px;
