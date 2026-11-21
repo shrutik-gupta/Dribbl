@@ -2,7 +2,7 @@
    Nothing here is stored. Results are cached until the data version changes. */
 import { S, P, version } from "../core/state.js";
 import { MAX_STRIKES, CLEAR_AFTER, DEFAULT_SEED } from "../config/constants.js";
-import { inMatch, injured } from "./match.js";
+import { inMatch, injured, isAbandoned, scoreOf } from "./match.js";
 
 let cache = { v: -1 };
 
@@ -13,10 +13,7 @@ export function derive() {
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.endedAt || 0) - (b.endedAt || 0)));
 
   for (const m of Object.values(S.matches)) {
-    /* A side's score: its players' goals, its "other goals", and own goals by the other side */
-    const og = m.og || {}, sum = (ids, o) => ids.reduce((s, p) => s + (o[p] || 0), 0);
-    const sA = sum(m.teamA, m.goals) + (m.extraA || 0) + sum(m.teamB, og);
-    const sB = sum(m.teamB, m.goals) + (m.extraB || 0) + sum(m.teamA, og);
+    const { sA, sB } = scoreOf(m);
     info[m.id] = { sA, sB, acc: {}, avg: {}, raters: 0, motm: null };
   }
   for (const r of Object.values(S.ratings)) {
@@ -49,14 +46,16 @@ export function derive() {
 function penalties(ended) {
   const pen = {};
   const add = (pid, item) => (pen[pid] || (pen[pid] = { list: [], active: 0, suspended: false })).list.push(item);
+  /* An abandoned match never happened, so nobody is penalised for it */
   for (const m of Object.values(S.matches)) {
+    if (isAbandoned(m)) continue;
     for (const [pid, ns] of Object.entries(m.noShows || {})) {
       add(pid, { type: "noshow", mid: m.id, date: m.date, at: ns.at || 0, waived: !!(m.waived || {})[pid] });
     }
   }
   for (const [rid, r] of Object.entries(S.rsvps)) {
     if (!r.lateAt) continue;
-    const m = S.matches[r.matchId]; if (!m) continue;
+    const m = S.matches[r.matchId]; if (!m || isAbandoned(m)) continue;
     if (m.status === "ended" && inMatch(m, r.pid)) continue;
     add(r.pid, { type: "late", mid: m.id, rid, date: m.date, at: r.lateAt, waived: !!r.waived });
   }

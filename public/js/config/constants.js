@@ -10,6 +10,7 @@ export const FITNESS = [
   ["injured", "Injured (can't play)"]
 ];
 
+export const ABANDON_HOURS = 2;   // a match not started this long after kick-off is abandoned automatically
 export const LATE_HOURS = 12;   // dropping out closer to kick-off than this gives a penalty
 export const MAX_STRIKES = 3;   // active penalties that suspend a player
 export const CLEAR_AFTER = 3;   // matches played before a penalty clears

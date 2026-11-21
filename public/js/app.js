@@ -11,6 +11,7 @@ import { vGraphs } from "./features/graphs/view.js";
 import { vAdmin } from "./features/admin/view.js";
 import { destroyCharts, drawCharts } from "./features/graphs/charts.js";
 import { watchNewMatches } from "./features/notify/actions.js";
+import { sweepAbandoned } from "./features/matches/actions.js";
 
 let lastHtml = "";
 
@@ -47,6 +48,7 @@ export function renderApp() {
   if (!isOnboarded(me)) return paint(vOnboard());
 
   watchNewMatches();
+  sweepAbandoned();
   const [body, tab] = route();
   if (paint(shell(body, tab))) drawCharts();
 }

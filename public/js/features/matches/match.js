@@ -1,11 +1,13 @@
 /* Match centre: scoreboard header, host tools and the tab bar. Each tab lives in ./tabs. */
 import { S, UI, P, isAdmin } from "../../core/state.js";
-import { esc, firstName, fmtLong, fmtTime } from "../../lib/utils.js";
-import { derive, rosterOf } from "../../domain/derive.js";
+import { ABANDON_HOURS } from "../../config/constants.js";
+import { esc, firstName, fmtDate, fmtLong, fmtTime, ymd } from "../../lib/utils.js";
+import { derive, rosterOf, squadOf } from "../../domain/derive.js";
 import { CODE_LENGTH } from "../../config/constants.js";
-import { canControl, hasAccess, inMatch, minuteOf, payOf, teamLabel } from "../../domain/match.js";
+import { canControl, hasAccess, inMatch, isAbandoned, minuteOf, payOf, teamLabel } from "../../domain/match.js";
 import { ICON } from "../../ui/icons.js";
-import { emptyState } from "../../ui/components.js";
+import { avatar, emptyState } from "../../ui/components.js";
+import { teamCol } from "./teamcol.js";
 import { tabSquad } from "./tabs/squad.js";
 import { tabSummary } from "./tabs/summary.js";
 import { tabLineups } from "./tabs/lineups.js";
@@ -31,17 +33,31 @@ function matchTabs(m) {
 
 function matchHead(m) {
   const mi = derive().info[m.id];
-  const status = m.status === "live" ? `<span class="mstat live"><span class="livedot"></span>Live · ${minuteOf(m)}'</span>`
+  const abd = isAbandoned(m), wasLive = abd && (m.abandon || {}).wasLive;
+  const status = abd ? `<span class="mstat abd">${ICON.ban} Abandoned</span>` : m.status === "live" ? `<span class="mstat live"><span class="livedot"></span>Live · ${minuteOf(m)}'</span>`
     : m.status === "ended" ? `<span class="mstat">Full time</span>` : `<span class="mstat">Kick-off ${fmtTime(m.time)}</span>`;
   const team = side => {
     const cap = P(m["cap" + side]), label = teamLabel(m, side);
     return `<div class="tm"><span class="crest ${side}">${esc(label.trim()[0].toUpperCase())}</span><span class="tname">${esc(label)}</span>
       <span class="capn">${cap ? "Capt. " + esc(firstName(cap)) : "&nbsp;"}</span></div>`;
   };
-  const score = m.status === "setup" ? `<span class="vs">VS</span>` : `<span>${mi.sA}</span><i>-</i><span>${mi.sB}</span>`;
+  const score = m.status === "setup" || (abd && !wasLive) ? `<span class="vs">VS</span>` : `<span>${mi.sA}</span><i>-</i><span>${mi.sB}</span>`;
   return `<div class="mhead"><div class="meta">${[fmtLong(m.date), m.venue || "Venue not set", "Host " + ((P(m.hostId) || {}).name || "Unknown"), m.private ? "Private match" : ""].filter(Boolean).map(esc).join("<span>·</span>")}</div>
     <div class="score">${team("A")}<div class="big" aria-label="Score ${mi.sA} to ${mi.sB}">${score}</div>${team("B")}</div>
     <div class="mstat-row">${status}</div></div>`;
+}
+
+/* An abandoned match: why, who called it off, and who was due to play */
+function abandonedBody(m) {
+  const a = m.abandon || { auto: true }, by = P(a.by);
+  const why = a.auto ? `It didn't start within ${ABANDON_HOURS} hours of kick-off, so it was abandoned automatically.`
+    : `Abandoned by ${esc(by ? by.name : "the host")}${a.at ? " on " + fmtDate(ymd(new Date(a.at))) : ""}${a.wasLive ? (m.startedAt && a.at ? `, ${Math.max(1, Math.floor((a.at - m.startedAt) / 60000) + 1)} minutes in` : " during the match") : ""}.`;
+  const note = `<section class="note bad"><b>Match abandoned.</b> ${why}${a.reason ? ` Reason: ${esc(a.reason)}.` : ""} It doesn't count in stats, and no penalties were given.</section>`;
+  if (a.wasLive) return `${note}<section><div class="sec-h"><h2>Teams</h2></div><div class="teams">${teamCol(m, "A", "ended", false)}${teamCol(m, "B", "ended", false)}</div></section>`;
+  const squad = squadOf(m);
+  return `${note}<section><div class="sec-h"><h2>Who was in</h2><span class="muted small num">${squad.length}</span></div>
+    ${squad.length ? `<div class="card flush plist">${squad.map(pid => `<a class="it" href="#player-${esc(pid)}">${avatar(P(pid), 34)}<span class="nm">${esc(P(pid).name)}</span></a>`).join("")}</div>`
+      : emptyState("players", "Nobody had signed up.")}</section>`;
 }
 
 /* Shown instead of a private match until the viewer has its join code */
@@ -61,14 +77,18 @@ export function vMatch(id) {
   if (!m) return `${back}<section>${emptyState("help", "This match was deleted or doesn't exist.")}</section>`;
   if (!hasAccess(m)) return back + lockScreen(m);
   const ctl = canControl(m);
+  if (isAbandoned(m)) {
+    const del = ctl && isAdmin() ? `<div class="row tools"><button class="btn sm danger" data-act="deleteMatch" data-m="${esc(id)}">Delete match</button></div>` : "";
+    return `${back}${matchHead(m)}${del}${abandonedBody(m)}`;
+  }
   const tabs = matchTabs(m);
   const share = `<button class="btn sm accent" data-act="shareMatch" data-m="${esc(id)}">${ICON.share} Share</button>
       ${m.private ? `<button class="btn sm" data-act="copyCode" data-m="${esc(id)}" title="Copy the join code">${ICON.lock} Code <b>${esc(m.code)}</b></button>` : ""}`;
   const tools = `<div class="row tools">${share}${!ctl ? "" : `
       ${m.status !== "ended" ? `<button class="btn sm" data-act="editMatch" data-m="${esc(id)}">Edit details</button>` : ""}
       ${m.status === "ended" ? `<button class="btn sm" data-act="renameTeams" data-m="${esc(id)}">Rename teams</button>` : ""}
-      ${m.status === "setup" ? `<button class="btn sm danger" data-act="cancelMatch" data-m="${esc(id)}">Cancel match</button>` : ""}
-      ${m.status === "ended" && isAdmin() ? `<button class="btn sm danger" data-act="deleteMatch" data-m="${esc(id)}">Delete match</button>` : ""}
+      ${m.status !== "ended" ? `<button class="btn sm danger" data-act="abandonMatch" data-m="${esc(id)}">Abandon match</button>` : ""}
+      ${m.status !== "live" && isAdmin() ? `<button class="btn sm danger" data-act="deleteMatch" data-m="${esc(id)}">Delete match</button>` : ""}
       ${m.hostId !== S.me ? `<span class="muted small">You control this match as admin.</span>` : ""}`}</div>`;
   const body = tabs.cur === "squad" ? tabSquad(m, ctl)
     : tabs.cur === "summary" ? tabSummary(m, ctl)

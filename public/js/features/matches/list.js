@@ -3,7 +3,7 @@ import { S, P, meP } from "../../core/state.js";
 import { APK_URL, MAX_STRIKES, CLEAR_AFTER } from "../../config/constants.js";
 import { esc, firstName, fmtDate, fmtLong, fmtTime, parseD, rupees, todayStr } from "../../lib/utils.js";
 import { derive, penOf, suspended, squadOf, perHead } from "../../domain/derive.js";
-import { hasAccess, inMatch, injured, kickoff, minuteOf, payOf, rsvpOf } from "../../domain/match.js";
+import { hasAccess, inMatch, injured, isAbandoned, isUpcoming, kickoff, minuteOf, payOf, rsvpOf } from "../../domain/match.js";
 import { ICON } from "../../ui/icons.js";
 import { avatarStack, emptyState, strikes, teamTag } from "../../ui/components.js";
 
@@ -17,10 +17,11 @@ export function rsvpButtons(m) {
 
 function mrow(m) {
   const mi = derive().info[m.id];
-  const st = m.status === "live" ? `<span class="st live">${minuteOf(m)}'</span>`
+  const abd = isAbandoned(m), showScore = m.status === "live" || m.status === "ended" || (abd && (m.abandon || {}).wasLive);
+  const st = abd ? `<span class="st abd" title="Abandoned">ABD</span>` : m.status === "live" ? `<span class="st live">${minuteOf(m)}'</span>`
     : m.status === "ended" ? `<span class="st">FT</span>` : `<span class="st">${fmtTime(m.time)}</span>`;
-  return `<a class="mrow" href="#match-${esc(m.id)}">${st}<span class="side">${teamTag(m, "A")}</span>
-    <span class="sc">${m.status === "setup" ? "vs" : mi.sA + " - " + mi.sB}</span><span class="side b">${teamTag(m, "B")}</span></a>`;
+  return `<a class="mrow ${abd ? "abd" : ""}" href="#match-${esc(m.id)}">${st}<span class="side">${teamTag(m, "A")}</span>
+    <span class="sc">${showScore ? mi.sA + " - " + mi.sB : "vs"}</span><span class="side b">${teamTag(m, "B")}</span></a>`;
 }
 
 function nextCard(m) {
@@ -61,15 +62,18 @@ const callout = (icon, title, text, action, bad) => `<section class="card callou
 
 export function vMatches() {
   const all = Object.values(S.matches);
-  const upcoming = all.filter(m => m.status === "setup").sort((a, b) => kickoff(a) - kickoff(b));
+  const upcoming = all.filter(isUpcoming).sort((a, b) => kickoff(a) - kickoff(b));
   /* Scores of private matches are only listed for people who can open them */
   const live = all.filter(m => m.status === "live" && hasAccess(m));
   const ended = all.filter(m => m.status === "ended" && hasAccess(m)).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.endedAt || 0) - (a.endedAt || 0)));
   const toRate = ended.filter(m => inMatch(m, S.me) && !S.ratings[m.id + "_" + S.me]).slice(0, 3);
   const toPay = [...live, ...ended].filter(m => m.cost > 0 && m.hostId !== S.me && inMatch(m, S.me) && !payOf(m.id, S.me)).slice(0, 3);
   const pen = penOf(S.me), info = derive().info;
+  /* Results list finished and abandoned matches together, newest first */
+  const past = [...ended, ...all.filter(m => isAbandoned(m) && hasAccess(m))]
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.endedAt || (b.abandon || {}).at || 0) - (a.endedAt || (a.abandon || {}).at || 0)));
   const groups = {};
-  ended.forEach(m => { (groups[m.date] || (groups[m.date] = [])).push(m); });
+  past.forEach(m => { (groups[m.date] || (groups[m.date] = [])).push(m); });
   const tagline = live.length ? "There's a game on right now." : upcoming.length ? "Game on. Are you in?" : "Nothing on the calendar. Fancy hosting one?";
 
   return `<div class="hello"><div><p class="eyebrow">${fmtLong(todayStr())}</p><h1>Hey ${esc(firstName(meP()))}</h1><p class="muted">${tagline}</p></div>
@@ -86,7 +90,7 @@ export function vMatches() {
         : emptyState("calendar", `No upcoming match. Tap <b>Host a match</b> to set up the next game.`)}
     </section>
     <section><div class="sec-h"><h2>Results</h2><span class="muted small">${ended.length} played</span></div>
-      ${ended.length ? Object.keys(groups).map(d => `<div class="mgroup"><div class="mg-h"><span>${fmtLong(d)}</span><span class="muted">${esc(groups[d][0].venue || "")}</span></div>${groups[d].map(mrow).join("")}</div>`).join("")
+      ${past.length ? Object.keys(groups).map(d => `<div class="mgroup"><div class="mg-h"><span>${fmtLong(d)}</span><span class="muted">${esc(groups[d][0].venue || "")}</span></div>${groups[d].map(mrow).join("")}</div>`).join("")
         : emptyState("goal", "No results yet. The first full-time whistle will show up here.")}
     </section>
     ${installApp()}`;

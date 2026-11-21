@@ -6,7 +6,7 @@ import { P } from "../../core/state.js";
 import { APP_NAME, APP_URL, POS, POS_NAME } from "../../config/constants.js";
 import { f1, firstName, fmtLong, fmtTime } from "../../lib/utils.js";
 import { derive, liveTeams, ratingOf } from "../../domain/derive.js";
-import { otherSide, teamLabel } from "../../domain/match.js";
+import { otherSide, tallyOf, teamLabel } from "../../domain/match.js";
 import { gridOf, posOf } from "../../domain/formation.js";
 import { avatarTone, initials } from "../../ui/components.js";
 
@@ -311,7 +311,8 @@ export function matchFacts(m, pid) {
     side, mine, theirs, res, goals, rating, pos, all, tags: tags.slice(0, 5),
     motm: mi.motm === pid,
     rank: rating ? ranked.indexOf(pid) + 1 : 0, rankOf: ranked.length,
-    goalShare: mine ? Math.round(goals / mine * 100) : 0,
+    /* Share of the team's goals scored for that team (goals from before a mid-game switch don't count) */
+    goalShare: mine ? Math.min(100, Math.round((tallyOf(m).g[side][pid] || 0) / mine * 100)) : 0,
     form: upTo.slice(-5)
   };
 }

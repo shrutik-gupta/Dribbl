@@ -11,11 +11,21 @@ const KIND = { pen: "pen", og: "OG" };
 
 /* edit: the host can mark each player's goal as a penalty or an own goal */
 function timeline(m, edit) {
-  const evs = (m.events || []).slice().sort((a, b) => (a.min ?? 999) - (b.min ?? 999) || a.at - b.at);
+  /* Goals and mid-game team switches, in the order they happened */
+  const swaps = (m.swaps || []).map(x => Object.assign({ swap: true }, x));
+  const evs = [...(m.events || []), ...swaps].sort((a, b) => (a.min ?? 999) - (b.min ?? 999) || a.at - b.at);
   if (!evs.length) return emptyState("goal", m.status === "live" ? "No goals yet." : "No goal times recorded.");
   let a = 0, b = 0;
   const mid = esc(m.id);
   return `<div class="card flush">${evs.map(e => {
+    if (e.swap) {
+      /* from "" = joined, to "" = left, both set = switched teams */
+      const name = `<b>${esc((P(e.pid) || {}).name || "Removed player")}</b>`, at = e.to || e.from;
+      const who = `<span class="evswap">${!e.from ? `${ICON.plus} ${name} joined ${esc(teamLabel(m, e.to))}`
+        : !e.to ? `${ICON.close} ${name} left ${esc(teamLabel(m, e.from))}`
+        : `${ICON.swap} ${name} moved to ${esc(teamLabel(m, e.to))}`}</span>`;
+      return `<div class="ev"><div class="l">${at === "A" ? who : ""}</div><div class="m"><span>${e.min ? e.min + "'" : "–"}</span></div><div class="r">${at === "B" ? who : ""}</div></div>`;
+    }
     if (e.side === "A") a++; else b++;
     const tag = e.kind ? ` <span class="gkind ${e.kind}">${KIND[e.kind]}</span>` : "";
     const marks = edit && e.pid && e.at ? `<span class="gmarks">${["pen", "og"].map(k =>
@@ -35,7 +45,7 @@ function extrasCtl(m) {
       <button class="iconbtn plus" data-act="extra" data-d="1" data-side="${side}" data-m="${mid}" aria-label="Add other goal for ${name}">+</button></div>`;
   };
   return `<div class="card"><div class="extras">${one("A")}${one("B")}</div>
-    <p class="muted tiny foot">Tap + next to a player when they score. The minute is saved by itself. Mark a goal as <b>Pen</b> or <b>OG</b> in the goal list below. For an own goal, tap + on the player who put it in their own net, then tap <b>OG</b>. Use "other goals" for unknown scorers.</p></div>`;
+    <p class="muted tiny foot">Tap + next to a player when they score. The minute is saved by itself. Mark a goal as <b>Pen</b> or <b>OG</b> in the goal list below. For an own goal, tap + on the player who put it in their own net, then tap <b>OG</b>. Use "other goals" for unknown scorers. Tap ${ICON.swap} to move a player to the other team, ${ICON.close} to take them out of the match, or <b>Add player</b> under a team for someone who turned up late. Goals already scored always stay with the team they were scored for.</p></div>`;
 }
 
 export function tabSummary(m, ctl) {
