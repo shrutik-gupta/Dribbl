@@ -86,6 +86,11 @@
 .ev .l { text-align: right; }
 .ev .m { text-align: center; }
 .ev .m span { font-weight: 800; font-size: 12.5px; background: var(--tint); color: var(--accent-text); border-radius: 99px; padding: 3px 8px; font-variant-numeric: tabular-nums; }
+.gkind { display: inline-block; font-size: 11px; font-weight: 800; text-transform: none; border-radius: 99px; padding: 1px 7px; margin-left: 2px; vertical-align: 1px; background: var(--surface-2); color: var(--muted); }
+.gkind.og { background: color-mix(in srgb, var(--bad) 13%, var(--surface)); color: var(--bad); }
+.gmarks { display: flex; gap: 6px; margin-top: 6px; }
+.ev .l .gmarks { justify-content: flex-end; }
+.ev .toggle { min-height: 28px; font-size: 12px; padding: 2px 10px; }
 .ev .sc2 { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .motm { background: var(--tint); box-shadow: none; }
 .motm-n { font-family: var(--display); font-weight: 700; font-size: 20px; overflow-wrap: anywhere; }
@@ -238,5 +243,5 @@
   .prow .ctl { padding-left: 0; }
   .pcard { padding: 12px; gap: 10px; }
   .phero { gap: 12px; }
-  .phero > .av { width: 64px !important; height: 64px !important; font-size: 26px !important; }
+  .phero > .av, .phero > .avbtn > .av { width: 64px !important; height: 64px !important; font-size: 26px !important; }
 }

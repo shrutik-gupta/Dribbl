@@ -36,6 +36,16 @@ export function formErr(msg) {
   if (e) e.textContent = msg;
 }
 
+/* Full-screen photo. Lives in the modal root, so Escape, the Android back button and a tap
+   anywhere close it like any other modal. */
+export function openPhoto(src, name) {
+  modal.state = {};
+  document.getElementById("modal-root").innerHTML = `<div class="photo-view" data-act="closeModal" role="dialog" aria-modal="true" aria-label="${esc(name)}">
+      <button class="iconbtn photo-x" data-act="closeModal" aria-label="Close">${ICON.close}</button>
+      <img src="${esc(src)}" alt="${esc(name)}"><p>${esc(name)}</p></div>`;
+  document.querySelector("#modal-root .photo-x").focus();
+}
+
 export const actions = {
   closeModal() { if (modal.state.resolve) modal.state.resolve(false); closeModal(); },
   closeModalBg(el, e) { if (e.target === el) actions.closeModal(); },

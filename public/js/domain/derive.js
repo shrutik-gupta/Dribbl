@@ -13,8 +13,10 @@ export function derive() {
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.endedAt || 0) - (b.endedAt || 0)));
 
   for (const m of Object.values(S.matches)) {
-    const sA = m.teamA.reduce((s, p) => s + (m.goals[p] || 0), 0) + (m.extraA || 0);
-    const sB = m.teamB.reduce((s, p) => s + (m.goals[p] || 0), 0) + (m.extraB || 0);
+    /* A side's score: its players' goals, its "other goals", and own goals by the other side */
+    const og = m.og || {}, sum = (ids, o) => ids.reduce((s, p) => s + (o[p] || 0), 0);
+    const sA = sum(m.teamA, m.goals) + (m.extraA || 0) + sum(m.teamB, og);
+    const sB = sum(m.teamB, m.goals) + (m.extraB || 0) + sum(m.teamA, og);
     info[m.id] = { sA, sB, acc: {}, avg: {}, raters: 0, motm: null };
   }
   for (const r of Object.values(S.ratings)) {

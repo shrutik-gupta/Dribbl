@@ -57,6 +57,15 @@
 .callout { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; padding: 14px 16px; margin-top: 12px; }
 .callout .callout-t { flex: 1 1 130px; min-width: 0; }
 .callout > .btn, .callout > .strikes { margin-left: auto; }
+/* Full-screen profile photo */
+.avbtn { padding: 0; border: 0; background: none; border-radius: 50%; cursor: zoom-in; flex: none; }
+.avbtn:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+.photo-view { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, .92); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom)); cursor: zoom-out; animation: fade .2s; }
+.photo-view img { width: min(100%, 78vh, 560px); aspect-ratio: 1; object-fit: cover; border-radius: 20px; }
+.photo-view p { color: #fff; font-weight: 700; font-family: var(--display); font-size: 18px; text-align: center; }
+.photo-view .photo-x { position: absolute; top: calc(12px + var(--safe-top)); right: 12px; background: rgba(255, 255, 255, .14); border-color: transparent; color: #fff; }
+.callout.install { margin-top: 32px; }
 .callout.bad { background: color-mix(in srgb, var(--bad) 9%, var(--surface)); }
 .bubble { width: 44px; height: 44px; border-radius: 15px; background: var(--tint); display: flex; align-items: center; justify-content: center; color: var(--accent-text); flex: none; }
 .bubble svg { width: 22px; height: 22px; }
@@ -126,6 +135,9 @@
 .form .W { background: var(--brand); color: #fff; }
 .form .D { background: #cfd6d2; color: #141917; }
 .form .L { background: var(--bad); color: #fff; }
+/* Results read the same everywhere: a win is green, a loss is red */
+.res-w { color: var(--good); font-weight: 800; }
+.res-l { color: var(--bad); font-weight: 800; }
 .progress { height: 10px; border-radius: 99px; background: var(--line); overflow: hidden; margin-bottom: 12px; }
 .progress span { display: block; height: 100%; border-radius: 99px; background: var(--primary); transition: width .4s ease; }
 

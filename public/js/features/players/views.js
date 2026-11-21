@@ -1,5 +1,5 @@
 /* Squad list and the player profile page (also the "Me" tab). */
-import { S, P, activePlayers, isAdmin } from "../../core/state.js";
+import { S, UI, P, activePlayers, isAdmin, isRealAdmin } from "../../core/state.js";
 import { MAX_STRIKES, CLEAR_AFTER, POS_NAME } from "../../config/constants.js";
 import { esc, f1, fmtDate } from "../../lib/utils.js";
 import { derive, penOf, ratingOf } from "../../domain/derive.js";
@@ -48,20 +48,22 @@ export function vPlayer(pid) {
     admin ? `<button class="btn sm" data-act="editPlayer" data-p="${esc(pid)}">Edit as admin</button>` : "",
     admin && !isMe ? accountBtns(p) : "",
     isMe && admin ? `<a class="btn sm" href="#admin">Admin</a>` : "",
+    isMe && isRealAdmin() ? `<button class="btn sm" data-act="togglePlayerView">${UI.playerView ? "Switch to admin view" : "Use as player"}</button>` : "",
     isMe ? `<button class="btn sm ghost" data-act="logout">Log out</button>` : ""
   ].join("");
 
   return `${isMe ? "" : back}
-    <section class="phero card">${avatar(p, 88)}<div class="stack tight"><h1>${esc(p.name)} ${tagBadge(p)}</h1>
+    <section class="phero card">${p.photo ? `<button class="avbtn" data-act="viewPhoto" data-p="${esc(pid)}" aria-label="View ${esc(p.name)}'s photo full screen">${avatar(p, 88)}</button>` : avatar(p, 88)}<div class="stack tight"><h1>${esc(p.name)} ${tagBadge(p)}</h1>
         <div class="row tight">${posBadges(p)}${statusPill(p)}${p.isAdmin ? '<span class="pill mute">Admin</span>' : ""}</div>
         <p class="small muted">${esc(positions)}${isMe ? ` · @${esc(p.username)}` : ""}</p>
         ${inj.status && inj.status !== "fit" ? `<p class="small muted">${esc(inj.note || "")}${inj.returnDate ? `${inj.note ? " · " : ""}Expected back ${fmtDate(inj.returnDate)}` : ""}</p>` : ""}</div></section>
     ${buttons ? `<div class="row tools">${buttons}</div>` : ""}
+    ${isMe && isRealAdmin() && UI.playerView ? `<section class="note"><b>Player view.</b> You're seeing the app as a normal player, with admin tools hidden. Tap <b>Switch to admin view</b> to get them back.</section>` : ""}
     ${p.active === false ? `<section class="note bad"><b>Account suspended.</b> ${esc(p.name)} can't log in or be picked until an admin restores the account.</section>` : ""}
     ${pen.suspended ? `<section class="note bad"><b>Suspended.</b> ${pen.active} active penalties. ${isMe ? "Ask the admin to reapprove you." : "Only the admin can reapprove."}</section>` : ""}
     <section class="tiles">
       <div class="tile"><div class="k">Rating</div><div class="v">${rBadge(r.v, { seed: !r.peer, lg: true })}</div><div class="s">${r.peer ? `Peer average · ${s.rN} rated games` : "Starting score"}</div></div>
-      <div class="tile"><div class="k">Played</div><div class="v">${s.mp}</div><div class="s">${s.w}W ${s.d}D ${s.l}L</div></div>
+      <div class="tile"><div class="k">Played</div><div class="v">${s.mp}</div><div class="s"><span class="res-w">${s.w}W</span> ${s.d}D <span class="res-l">${s.l}L</span></div></div>
       <div class="tile"><div class="k">Goals</div><div class="v">${s.goals}</div><div class="s">${s.mp ? f1(s.goals / s.mp) + " per game" : "–"}</div></div>
       <div class="tile"><div class="k">Man of the match</div><div class="v">${s.motm}</div><div class="s">${s.mp ? Math.round(s.w / s.mp * 100) + "% win rate" : "–"}</div></div>
     </section>

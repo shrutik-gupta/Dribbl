@@ -10,10 +10,11 @@ function loadImage(file) {
   });
 }
 
-/* Square 192px JPEG for profile photos */
+/* Square 480px JPEG for profile photos: sharp enough to open full screen, about 30 KB.
+   Photos uploaded before this change are 192px and still work everywhere. */
 export async function compressImage(file) {
   const img = await loadImage(file);
-  const s = 192, c = document.createElement("canvas");
+  const s = 480, c = document.createElement("canvas");
   c.width = s; c.height = s;
   const r = Math.max(s / img.width, s / img.height), w = img.width * r, h = img.height * r;
   c.getContext("2d").drawImage(img, (s - w) / 2, (s - h) / 2, w, h);

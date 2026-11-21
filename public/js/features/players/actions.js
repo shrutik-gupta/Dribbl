@@ -1,16 +1,17 @@
 /* A player's own profile, photo and UPI details. */
-import { S, meP } from "../../core/state.js";
+import { S, P, meP } from "../../core/state.js";
 import { savePlayer, setDoc } from "../../core/db.js";
 import { clone, esc } from "../../lib/utils.js";
 import { compressImage, compressQR } from "../../lib/images.js";
 import { avatar } from "../../ui/components.js";
-import { closeModal, formErr, modal, openModal } from "../../ui/modal.js";
+import { closeModal, formErr, modal, openModal, openPhoto } from "../../ui/modal.js";
 import { toast } from "../../ui/toast.js";
 import { fitnessFields, nicknameField, photoField, positionFields, readFitness, readPositions } from "./forms.js";
 
 const BAD_IMAGE = "That file isn't an image we can read. Try a JPG or PNG.";
 
 export const actions = {
+  viewPhoto(el) { const p = P(el.dataset.p); if (p && p.photo) openPhoto(p.photo, p.name); },
   editProfile() {
     const p = meP();
     openModal("My profile", `${photoField(p)}${nicknameField(p)}${positionFields(p)}${fitnessFields(p)}

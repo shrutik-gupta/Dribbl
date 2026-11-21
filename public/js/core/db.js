@@ -23,7 +23,7 @@ export async function initDb() {
 const normalise = {
   players: (id, d) => Object.assign({ injury: { status: "fit" }, position2: "", position3: "" }, clone(d), { id }),
   matches: (id, d) => Object.assign({
-    teamA: [], teamB: [], nameA: "", nameB: "", pos: {}, slot: {}, goals: {}, events: [], extraA: 0, extraB: 0,
+    teamA: [], teamB: [], nameA: "", nameB: "", pos: {}, slot: {}, goals: {}, og: {}, events: [], extraA: 0, extraB: 0,
     capA: "", vcA: "", capB: "", vcB: "", venue: "", status: "setup",
     date: todayStr(), time: "20:00", cost: 0, noShows: {}, waived: {}, private: false, code: ""
   }, clone(d), { id })

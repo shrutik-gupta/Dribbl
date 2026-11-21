@@ -6,7 +6,7 @@ import { delDoc, mutateMatch, setDoc } from "../../core/db.js";
 import { APP_NAME, CODE_LENGTH, LATE_HOURS, MAX_STRIKES, TEAM_NAME_MAX } from "../../config/constants.js";
 import { esc, firstName, fmtLong, fmtTime, joinCode, parseD, rupees, todayStr, uid, upiLink } from "../../lib/utils.js";
 import { derive, liveTeams, penOf, perHead, squadOf, suspended, ratingOf } from "../../domain/derive.js";
-import { codeMatches, hasAccess, injured, isLateNow, matchLink, minuteOf, payOf, rememberCode, rsvpOf, teamLabel } from "../../domain/match.js";
+import { codeMatches, hasAccess, injured, isLateNow, matchLink, minuteOf, otherSide, payOf, rememberCode, rsvpOf, teamLabel } from "../../domain/match.js";
 import { balanceTeams, suggestCaps } from "../../domain/balance.js";
 import { gridOf } from "../../domain/formation.js";
 import { POS } from "../../config/constants.js";
@@ -123,7 +123,7 @@ export const actions = {
       m.noShows = m.noShows || {}; m.noShows[pid] = { at: Date.now(), by: S.me };
       m.teamA = m.teamA.filter(x => x !== pid); m.teamB = m.teamB.filter(x => x !== pid);
       for (const k of ["capA", "vcA", "capB", "vcB"]) if (m[k] === pid) m[k] = "";
-      if (m.goals[pid]) { delete m.goals[pid]; m.events = (m.events || []).filter(e => e.pid !== pid); }
+      if (m.goals[pid] || (m.og && m.og[pid])) { delete m.goals[pid]; if (m.og) delete m.og[pid]; m.events = (m.events || []).filter(e => e.pid !== pid); }
     });
   },
   undoNoShow(el) { const pid = el.dataset.p; mutateMatch(el.dataset.m, m => { if (m.noShows) delete m.noShows[pid]; }); },
@@ -183,7 +183,27 @@ export const actions = {
       m.goals[pid] = Math.max(0, (m.goals[pid] || 0) + d); if (!m.goals[pid]) delete m.goals[pid];
       m.events = m.events || [];
       if (d > 0) m.events.push({ pid, side, min: m.status === "live" ? minuteOf(m) : null, at: Date.now() });
-      else { const i = m.events.map(e => e.pid).lastIndexOf(pid); if (i >= 0) m.events.splice(i, 1); }
+      else { const i = m.events.map(e => (e.kind === "og" ? "" : e.pid)).lastIndexOf(pid); if (i >= 0) m.events.splice(i, 1); }
+    });
+  },
+  /* Marks a goal as a penalty or an own goal (tap again to undo). An own goal is taken off the
+     player's tally and counts for the other team. Goals are found by the time they were added. */
+  goalKind(el) {
+    const at = +el.dataset.at, k = el.dataset.k;
+    mutateMatch(el.dataset.m, m => {
+      const e = (m.events || []).find(x => x.at === at && x.pid);
+      if (!e) return false;
+      const pid = e.pid, own = m.teamA.includes(pid) ? "A" : "B", next = e.kind === k ? "" : k;
+      m.og = m.og || {};
+      if (e.kind === "og" && next !== "og") {
+        m.og[pid] = Math.max(0, (m.og[pid] || 0) - 1); if (!m.og[pid]) delete m.og[pid];
+        m.goals[pid] = (m.goals[pid] || 0) + 1; e.side = own;
+      } else if (e.kind !== "og" && next === "og") {
+        if (!m.goals[pid]) return false;
+        m.goals[pid]--; if (!m.goals[pid]) delete m.goals[pid];
+        m.og[pid] = (m.og[pid] || 0) + 1; e.side = otherSide(own);
+      }
+      if (next) e.kind = next; else delete e.kind;
     });
   },
   extra(el) {
@@ -205,15 +225,19 @@ export const actions = {
 
   /* ----- ratings ----- */
   rate(el) { const { m, p, v } = el.dataset; (UI.draft[m] || (UI.draft[m] = {}))[p] = +v; render(); },
-  reRate(el) { UI.reRate[el.dataset.m] = true; delete UI.draft[el.dataset.m]; render(); },
+  /* Ratings are final: one submission per player per match, never changed or withdrawn.
+     firestore.rules enforces this too (ratings can be created but not updated). */
   async submitRatings(el) {
     const id = el.dataset.m, m = S.matches[id]; if (!m) return;
+    if (S.ratings[id + "_" + S.me]) return toast("You've already rated this match.");
     const others = [...m.teamA, ...m.teamB].filter(p => p !== S.me);
     const d = UI.draft[id] || {}, scores = {};
     for (const p of others) { if (!(d[p] >= 1 && d[p] <= 10)) return toast("Rate every player before submitting."); scores[p] = d[p]; }
+    if (!await confirmBox("Submit your ratings?", "Ratings are final. Once submitted, you can't change or remove them.", "Submit ratings")) return;
+    if (S.ratings[id + "_" + S.me]) return toast("You've already rated this match.");
     el.disabled = true;
     const ok = await setDoc("ratings/" + id + "_" + S.me, { matchId: id, raterId: S.me, scores, at: Date.now() });
-    if (ok) { UI.reRate[id] = false; delete UI.draft[id]; toast("Ratings submitted. Thanks!"); }
+    if (ok) { delete UI.draft[id]; toast("Ratings submitted. Thanks!"); }
     render();
   },
 
@@ -272,7 +296,7 @@ export const forms = {
     const doc = Object.assign(details, {
       code: details.private ? joinCode(CODE_LENGTH) : "",
       hostId: S.me, status: "setup", teamA: [], teamB: [], pos: {}, capA: "", vcA: "", capB: "", vcB: "",
-      goals: {}, events: [], extraA: 0, extraB: 0, noShows: {}, waived: {}, createdAt: Date.now()
+      goals: {}, og: {}, events: [], extraA: 0, extraB: 0, noShows: {}, waived: {}, createdAt: Date.now()
     });
     if (!await setDoc("matches/" + id, doc)) return;
     closeModal();

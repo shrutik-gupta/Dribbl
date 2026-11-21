@@ -4,7 +4,12 @@ service cloud.firestore {
     // Only the app's own collections can be read or written.
     // Anyone who has the website link can reach this data, so keep the link within your group.
     match /{col}/{id} {
-      allow read, write: if col in ['players', 'matches', 'ratings', 'rsvps', 'payments', 'payinfo', 'config'];
+      allow read, write: if col in ['players', 'matches', 'rsvps', 'payments', 'payinfo', 'config'];
+    }
+    // Ratings are final: a player's rating of a match can be created once but never changed.
+    // Delete stays allowed because deleting a match removes its ratings.
+    match /ratings/{id} {
+      allow read, create, delete: if true;
     }
   }
 }

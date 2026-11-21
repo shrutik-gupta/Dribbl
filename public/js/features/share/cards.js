@@ -16,7 +16,8 @@ const BODY = '"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif';
 const C = {
   brand: "#01935c", lime: "#61df6e", limeInk: "#06301c", night: "#0d110f", ink: "#141917",
   white: "#ffffff", mist: "rgba(255, 255, 255, .64)", panel: "rgba(255, 255, 255, .08)",
-  teamA: "#61df6e", teamB: "#e9eeeb"
+  teamA: "#61df6e", teamB: "#e9eeeb",
+  red: "#ff6b5e", redDot: "#e5483b"   // a loss is always red, a win always green
 };
 const STAR = "M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z";
 const BALL = "M12 7.5l3.8 2.8-1.5 4.4H9.7l-1.5-4.4zM12 3v4.5M15.8 10.3l4.6-1.6M14.3 14.7l2.8 4M9.7 14.7l-2.8 4M8.2 10.3L3.6 8.7";
@@ -346,7 +347,7 @@ export async function statsCard(m, pid) {
   const ry = 776, rh = 240;
   box(ctx, PAD, ry, W - 2 * PAD, rh, 40); ctx.fillStyle = C.panel; ctx.fill();
   text(ctx, "FULL TIME", PAD + 44, ry + 64, { size: 26, weight: 800, fill: C.mist, spacing: 3 });
-  text(ctx, f.res === "W" ? "WON" : f.res === "L" ? "LOST" : "DRAW", PAD + 40, ry + 186, { size: 128, weight: 800, family: DISPLAY, fill: f.res === "W" ? C.lime : C.white });
+  text(ctx, f.res === "W" ? "WON" : f.res === "L" ? "LOST" : "DRAW", PAD + 40, ry + 186, { size: 128, weight: 800, family: DISPLAY, fill: f.res === "W" ? C.lime : f.res === "L" ? C.red : C.white });
   text(ctx, `${f.mine} – ${f.theirs}`, W - PAD - 44, ry + 136, { size: 112, weight: 800, family: DISPLAY, align: "right" });
   text(ctx, "vs " + teamLabel(m, otherSide(f.side)), W - PAD - 44, ry + 192, { size: 30, weight: 600, fill: C.mist, align: "right", maxW: 420 });
 
@@ -385,7 +386,7 @@ export async function statsCard(m, pid) {
     else {
       const d = 32, g = 6, n = f.form.length; let x = cx - (n * d + (n - 1) * g) / 2;
       for (const r of f.form) {
-        ctx.fillStyle = r === "W" ? C.lime : r === "D" ? "#cfd6d2" : "#56615b";
+        ctx.fillStyle = r === "W" ? C.lime : r === "D" ? "#cfd6d2" : C.redDot;
         ctx.beginPath(); ctx.arc(x + d / 2, sy + 70, d / 2, 0, Math.PI * 2); ctx.fill();
         ctx.save(); ctx.textBaseline = "middle";
         text(ctx, r, x + d / 2, sy + 71, { size: 18, weight: 800, align: "center", fill: r === "L" ? C.white : C.limeInk });

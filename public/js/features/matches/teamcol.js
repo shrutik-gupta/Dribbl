@@ -17,7 +17,7 @@ export function teamCol(m, side, mode, ctl, idsIn) {
   const rows = ids.map(pid => {
     const p = P(pid) || { id: pid, name: "Removed player" };
     const pos = m.pos[pid] || p.position;
-    const g = m.goals[pid] || 0;
+    const g = m.goals[pid] || 0, og = (m.og || {})[pid] || 0;
     const badges = (cap === pid ? '<span class="cv" title="Captain">C</span>' : "") + (vc === pid ? '<span class="cv vc" title="Vice captain">VC</span>' : "");
     const who = `data-m="${mid}" data-p="${esc(pid)}"`;
     let right;
@@ -35,7 +35,7 @@ export function teamCol(m, side, mode, ctl, idsIn) {
       right = `<div class="goalc"><button class="iconbtn" data-act="goal" data-d="-1" ${who} ${g ? "" : "disabled"} aria-label="Remove goal for ${esc(p.name)}">−</button><b>${g}</b>
         <button class="iconbtn plus" data-act="goal" data-d="1" ${who} aria-label="Add goal for ${esc(p.name)}">+</button></div>`;
     } else {
-      right = `${posBadge(pos)}<span class="small gcount goals-n">${g ? ICON.ball + g : ""}</span>`;
+      right = `${posBadge(pos)}<span class="small gcount goals-n">${g ? ICON.ball + g : ""}${og ? ` <span class="gkind og">${og > 1 ? og + " " : ""}OG</span>` : ""}</span>`;
     }
     return `<div class="prow">${avatar(p, 34)}<span class="nm">${esc(p.name)} ${badges}</span>${right}</div>`;
   }).join("");

@@ -1,6 +1,6 @@
 /* Home screen: greeting, things to do, live / upcoming / finished matches. */
 import { S, P, meP } from "../../core/state.js";
-import { MAX_STRIKES, CLEAR_AFTER } from "../../config/constants.js";
+import { APK_URL, MAX_STRIKES, CLEAR_AFTER } from "../../config/constants.js";
 import { esc, firstName, fmtDate, fmtLong, fmtTime, parseD, rupees, todayStr } from "../../lib/utils.js";
 import { derive, penOf, suspended, squadOf, perHead } from "../../domain/derive.js";
 import { hasAccess, inMatch, injured, kickoff, minuteOf, payOf, rsvpOf } from "../../domain/match.js";
@@ -43,6 +43,19 @@ function nextCard(m) {
     </div></article>`;
 }
 
+const isNative = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
+/* Bottom of the home screen: download link for the latest Android app.
+   Inside the app the link opens the phone's browser, which downloads the file. */
+function installApp() {
+  const app = isNative();
+  return `<section class="card callout install"><span class="bubble" aria-hidden="true">${ICON.download}</span>
+    <div class="callout-t"><b>${app ? "Get the latest version" : "Install the Android app"}</b>
+      <p class="muted small">${app ? "Download the newest app, open the file and tap <b>Update</b>. Your login and data stay."
+        : "Download the app, open the file and tap <b>Install</b>. On iPhone, open this site in Safari, tap Share, then <b>Add to Home Screen</b>."}</p></div>
+    <a class="btn sm accent" href="${APK_URL}" ${app ? "" : "download"}>${ICON.download} Download APK</a></section>`;
+}
+
 const callout = (icon, title, text, action, bad) => `<section class="card callout ${bad ? "bad" : ""}"><span class="bubble" aria-hidden="true">${ICON[icon]}</span>
     <div class="callout-t"><b>${title}</b><p class="muted small">${text}</p></div>${action || ""}</section>`;
 
@@ -75,5 +88,6 @@ export function vMatches() {
     <section><div class="sec-h"><h2>Results</h2><span class="muted small">${ended.length} played</span></div>
       ${ended.length ? Object.keys(groups).map(d => `<div class="mgroup"><div class="mg-h"><span>${fmtLong(d)}</span><span class="muted">${esc(groups[d][0].venue || "")}</span></div>${groups[d].map(mrow).join("")}</div>`).join("")
         : emptyState("goal", "No results yet. The first full-time whistle will show up here.")}
-    </section>`;
+    </section>
+    ${installApp()}`;
 }

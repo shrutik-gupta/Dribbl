@@ -3,7 +3,7 @@ import { S, UI, meP } from "../../core/state.js";
 import { render } from "../../core/render.js";
 import { go } from "../../core/router.js";
 import { savePlayer, usernameExists, clubHasPlayers } from "../../core/db.js";
-import { SESSION_KEY, MIN_PASSWORD, USERNAME_RE, USERNAME_HELP, DEFAULT_SEED } from "../../config/constants.js";
+import { SESSION_KEY, PLAYER_VIEW_KEY, MIN_PASSWORD, USERNAME_RE, USERNAME_HELP, DEFAULT_SEED } from "../../config/constants.js";
 import { lsSet, lsDel } from "../../lib/storage.js";
 import { hashPw } from "../../lib/crypto.js";
 import { uid, clone, cleanUser } from "../../lib/utils.js";
@@ -25,7 +25,7 @@ function startSession(pid) {
 
 export const actions = {
   authMode(el) { UI.authMode = el.dataset.k; render(); },
-  logout() { S.me = null; lsDel(SESSION_KEY); UI.authMode = "login"; go("matches"); render(); },
+  logout() { S.me = null; lsDel(SESSION_KEY); lsDel(PLAYER_VIEW_KEY); UI.playerView = false; UI.authMode = "login"; go("matches"); render(); },
   changePw() {
     openModal("Change password", `<div class="field"><label for="f-cur">Current password</label><input id="f-cur" name="cur" type="password" required autocomplete="current-password"></div>
       <div class="grid2"><div class="field"><label for="f-new">New password</label><input id="f-new" name="nw" type="password" required minlength="${MIN_PASSWORD}" autocomplete="new-password"></div>

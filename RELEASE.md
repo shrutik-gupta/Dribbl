@@ -5,7 +5,7 @@ Follow this every time a new feature or fix is ready. There are two things to sh
 - **The website** (`https://dribbl.web.app`): updates for everyone the moment you deploy.
 - **The Android app** (`dist/Dribbl.apk`): the web files are packed inside it, so it only updates when friends install a new APK.
 
-Always ship both, website first. Both talk to the same database, so an old app and a new website should not be left out of step for long.
+Always ship both. Build the APK first: `npm run apk` also copies it to `public/download/`, and the website deploy publishes it at `https://dribbl.web.app/download/Dribbl.apk`. The **Download APK** button at the bottom of the home page points there.
 
 Run every command from the project folder.
 
@@ -26,18 +26,7 @@ git add -A
 git commit -m "Short description of the feature"
 ```
 
-## 3. Deploy the website
-
-```
-firebase use staging
-npm run deploy:site
-```
-
-- `firebase use staging` is only needed once per computer (it selects the `fotstrike` Firebase project).
-- If you changed `firestore.rules`, run `npm run deploy` instead. It uploads the rules as well as the site.
-- Open https://dribbl.web.app and refresh to confirm the change is live.
-
-## 4. Build the Android app
+## 3. Build the Android app
 
 1. Open `android/app/build.gradle` and raise the version:
 
@@ -52,7 +41,7 @@ npm run deploy:site
    npm run apk
    ```
 
-   The APK is written to `dist/Dribbl.apk`.
+   The APK is written to `dist/Dribbl.apk` and copied to `public/download/Dribbl.apk` (not tracked in git).
 
 3. Commit the version bump:
 
@@ -60,10 +49,22 @@ npm run deploy:site
    git commit -am "Android 1.1"
    ```
 
+## 4. Deploy the website (and publish the APK)
+
+```
+firebase use staging
+npm run deploy:site
+```
+
+- `firebase use staging` is only needed once per computer (it selects the `fotstrike` Firebase project).
+- If you changed `firestore.rules`, run `npm run deploy` instead. It uploads the rules as well as the site.
+- Open https://dribbl.web.app and refresh to confirm the change is live.
+- The deploy also uploads `public/download/Dribbl.apk`, so the home page's **Download APK** button now gives the new version.
+
 ## 5. Share the APK
 
 1. Install `dist/Dribbl.apk` on your own phone first and check the new feature works.
-2. Send the file to the group (WhatsApp, Drive).
+2. Tell the group to tap **Download APK** at the bottom of the home page (or send them the file).
 3. Friends open the file and tap **Update**. Their login and data are kept.
 
 ## Rules that keep updates working
@@ -89,9 +90,9 @@ npm run deploy:site
 ```
 npm run check
 git add -A && git commit -m "Feature name"
-npm run deploy:site
 # raise versionCode and versionName in android/app/build.gradle
 npm run apk
 git commit -am "Android x.y"
-# test dist/Dribbl.apk on your phone, then share it
+npm run deploy:site        # also publishes the APK behind the home page's Download button
+# test the APK on your phone, then tell the group to update
 ```

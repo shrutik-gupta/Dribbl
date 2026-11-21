@@ -1,15 +1,26 @@
 /* Admin-only actions: edit, suspend and delete players, club settings, penalties. */
-import { S, UI, P, clubName, isAdmin } from "../../core/state.js";
+import { S, UI, P, clubName, isAdmin, isRealAdmin } from "../../core/state.js";
+import { render } from "../../core/render.js";
 import { go } from "../../core/router.js";
 import { delDoc, mutateMatch, savePlayer, setDoc } from "../../core/db.js";
-import { DEFAULT_CLUB, MIN_PASSWORD, USERNAME_RE, USERNAME_HELP } from "../../config/constants.js";
+import { DEFAULT_CLUB, PLAYER_VIEW_KEY, MIN_PASSWORD, USERNAME_RE, USERNAME_HELP } from "../../config/constants.js";
 import { hashPw } from "../../lib/crypto.js";
 import { cleanUser, clone, esc, uid } from "../../lib/utils.js";
 import { closeModal, confirmBox, formErr, modal, openModal } from "../../ui/modal.js";
 import { toast } from "../../ui/toast.js";
+import { lsDel, lsSet } from "../../lib/storage.js";
 import { adminPlayerForm, readFitness, readPositions } from "../players/forms.js";
 
 export const actions = {
+  /* Player view hides every admin tool so an admin sees the app exactly as a player does.
+     Only this device remembers the choice; the account keeps its admin rights. */
+  togglePlayerView() {
+    if (!isRealAdmin()) return;
+    UI.playerView = !UI.playerView;
+    if (UI.playerView) lsSet(PLAYER_VIEW_KEY, "1"); else lsDel(PLAYER_VIEW_KEY);
+    toast(UI.playerView ? "Player view on. Admin tools are hidden." : "Admin view on.");
+    render();
+  },
   editClub() {
     openModal("Club settings", `<div class="field"><label for="f-club">Club name</label><input id="f-club" name="club" required maxlength="40" value="${esc(clubName())}"></div>
       <div class="field"><label for="f-dv">Usual turf (pre-fills new matches)</label><input id="f-dv" name="venue" maxlength="60" value="${esc(S.config.venue || "")}"></div>

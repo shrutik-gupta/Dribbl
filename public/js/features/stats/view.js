@@ -33,7 +33,7 @@ export function vStats() {
   const row = s => {
     const p = P(s.pid);
     return `<tr><td class="l sticky"><a class="who" href="#player-${esc(p.id)}">${avatar(p, 28)}${esc(p.name)}</a></td><td class="l">${posBadge(p.position)}</td>
-      <td>${s.mp}</td><td>${s.w}</td><td>${s.d}</td><td>${s.l}</td><td>${Math.round(s.winPct)}%</td><td>${s.goals}</td><td>${f1(s.goals / s.mp)}</td><td>${rBadge(s.avg)}</td><td>${s.motm || ""}</td>
+      <td>${s.mp}</td><td class="res-w">${s.w}</td><td>${s.d}</td><td class="res-l">${s.l}</td><td>${Math.round(s.winPct)}%</td><td>${s.goals}</td><td>${f1(s.goals / s.mp)}</td><td>${rBadge(s.avg)}</td><td>${s.motm || ""}</td>
       <td class="l"><span class="form">${s.form.slice(-5).map(r => `<i class="${r}">${r}</i>`).join("")}</span></td></tr>`;
   };
 
