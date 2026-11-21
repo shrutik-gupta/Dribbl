@@ -22,7 +22,7 @@ export const OLD_APP_NAMES = ["Turf Weekly"];  // a club still carrying a previo
 export const DEFAULT_SEED = 6;  // starting score until a player gets peer ratings
 export const SESSION_KEY = "tw.me";
 export const PLAYER_VIEW_KEY = "tw.playerView";   // "1" while an admin uses the app as a normal player
-export const APK_URL = APP_URL + "/download/Dribbl.apk";   // latest Android app, published by `npm run apk` + deploy
+export const APK_URL = "https://github.com/shrutik-gupta/Dribbl/releases/latest/download/Dribbl.apk";   // newest GitHub release; the asset must be named Dribbl.apk
 
 export const MIN_PASSWORD = 6;
 export const USERNAME_RE = /^[a-z0-9._-]{2,24}$/;

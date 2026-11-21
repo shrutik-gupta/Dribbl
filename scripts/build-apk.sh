@@ -23,8 +23,6 @@ npx cap sync android              # copy public/ into the Android project
 rm -rf android/app/src/main/assets/public/download   # keep the previous APK out of the new one
 (cd android && ./gradlew assembleDebug)
 
-mkdir -p dist public/download
+mkdir -p dist
 cp android/app/build/outputs/apk/debug/app-debug.apk dist/Dribbl.apk
-# The home page's "Download APK" link serves this copy once the website is deployed.
-cp dist/Dribbl.apk public/download/Dribbl.apk
-echo "Built dist/Dribbl.apk (deploy the website to publish it at /download/Dribbl.apk)"
+echo "Built dist/Dribbl.apk (upload it to a new GitHub release to publish it; see RELEASE.md)"
