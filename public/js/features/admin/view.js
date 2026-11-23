@@ -1,6 +1,6 @@
 /* Admin page: manage the squad. Players create their own accounts; the admin tunes them. */
-import { S, clubName, isOnboarded } from "../../core/state.js";
-import { esc, f1 } from "../../lib/utils.js";
+import { S, P, clubName, isOnboarded } from "../../core/state.js";
+import { esc, f1, fmtDate, fmtTime, ymd } from "../../lib/utils.js";
 import { penOf, ratingOf, suspended } from "../../domain/derive.js";
 import { ICON } from "../../ui/icons.js";
 import { avatar, posBadges, rBadge, statusPill, strikes, tagBadge } from "../../ui/components.js";
@@ -11,6 +11,19 @@ export const accountBtns = p => {
   return (p.active === false ? `<button class="btn sm accent" data-act="restorePlayer" ${who}>Restore</button>` : `<button class="btn sm" data-act="suspendPlayer" ${who}>Suspend</button>`)
     + `<button class="btn sm danger" data-act="deletePlayer" ${who}>Delete</button>`;
 };
+
+/* Everything soft-deleted, newest first, with who deleted it. Payments are left out: a player just marks it paid again. */
+function deletedSection() {
+  const by = x => { const p = P(x.deletedBy); return `Deleted by ${esc(p ? p.name : "unknown")} on ${fmtDate(ymd(new Date(x.deletedAt)))}`; };
+  const row = (x, title, act, attr) => [x.deletedAt, `<div class="it"><span class="nm">${title} <span class="muted small">${by(x)}</span></span>
+      <span class="acts"><button class="btn sm accent" data-act="${act}" data-${attr}="${esc(x.id)}">Restore</button></span></div>`];
+  const rows = [
+    ...Object.values(S.deleted.matches || {}).map(m => row(m, `Match ${fmtDate(m.date)}, ${fmtTime(m.time)}${m.venue ? " · " + esc(m.venue) : ""}`, "undeleteMatch", "m")),
+    ...Object.values(S.deleted.players || {}).map(p => row(p, "Player " + esc(p.name), "undeletePlayer", "p"))
+  ].sort((a, b) => b[0] - a[0]);
+  return rows.length ? `<section><div class="sec-h"><h2>Deleted</h2><span class="muted small num">${rows.length}</span></div><div class="card flush plist">${rows.map(r => r[1]).join("")}</div>
+      <p class="muted tiny foot">Deleted matches and accounts are kept. Restoring one brings back everything that belonged to it.</p></section>` : "";
+}
 
 export function vAdmin() {
   const list = Object.values(S.players).sort((a, b) => (a.active === false) - (b.active === false) || a.name.localeCompare(b.name));
@@ -36,5 +49,6 @@ export function vAdmin() {
           <td class="l">${status(p)}</td><td><span class="row tight nowrap end"><button class="btn sm" data-act="editPlayer" data-p="${esc(p.id)}">Edit</button>${p.id === S.me ? "" : accountBtns(p)}</span></td></tr>`;
       }).join("")}
     </tbody></table></div>
-      <p class="muted tiny foot"><b>Suspend</b> logs a player out and blocks their login until you restore them. <b>Delete</b> removes the account for good; finished matches keep their scores.</p></section>`;
+      <p class="muted tiny foot"><b>Suspend</b> logs a player out and blocks their login until you restore them. <b>Delete</b> hides the account until you restore it below; finished matches keep their scores.</p></section>
+    ${deletedSection()}`;
 }

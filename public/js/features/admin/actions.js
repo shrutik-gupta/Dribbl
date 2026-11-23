@@ -2,7 +2,7 @@
 import { S, UI, P, clubName, isAdmin, isRealAdmin } from "../../core/state.js";
 import { render } from "../../core/render.js";
 import { go } from "../../core/router.js";
-import { delDoc, mutateMatch, savePlayer, setDoc } from "../../core/db.js";
+import { mutateMatch, restoreDoc, savePlayer, setDoc, softDelete } from "../../core/db.js";
 import { DEFAULT_CLUB, PLAYER_VIEW_KEY, MIN_PASSWORD, USERNAME_RE, USERNAME_HELP } from "../../config/constants.js";
 import { hashPw } from "../../lib/crypto.js";
 import { cleanUser, clone, esc, uid } from "../../lib/utils.js";
@@ -64,17 +64,27 @@ export const actions = {
     const pid = el.dataset.p, name = (P(pid) || {}).name;
     if (!isAdmin() || !P(pid)) return;
     if (pid === S.me) return toast("You can't delete your own account.");
-    if (!await confirmBox("Delete " + name + "?", `This removes their account, login and UPI details for good. Finished matches keep their scores and show "Removed player". This can't be undone.`, "Delete account", true)) return;
+    if (!await confirmBox("Delete " + name + "?", `Their account, login and UPI details are hidden and they can't log in. Finished matches keep their scores and show "Removed player". You can restore the account from Me > Admin.`, "Delete account", true)) return;
     if (!P(pid)) return;
-    if (!await delDoc("players/" + pid)) return;
-    if (S.payinfo[pid]) delDoc("payinfo/" + pid);
-    /* Drop their replies to matches that haven't finished, so they vanish from those squads */
-    for (const [rid, r] of Object.entries(S.rsvps)) {
-      const m = S.matches[r.matchId];
-      if (r.pid === pid && (!m || m.status !== "ended")) delDoc("rsvps/" + rid);
-    }
+    /* Their match replies stay: squads only list players who exist, so they vanish from them anyway */
+    if (!await softDelete("players/" + pid)) return;
+    if (S.payinfo[pid]) softDelete("payinfo/" + pid);
     if (UI.route === "player-" + pid) go("admin");
     toast(name + "'s account is deleted.");
+  },
+
+  /* Bring back something soft-deleted */
+  async undeleteMatch(el) {
+    const id = el.dataset.m;
+    if (!isAdmin() || !(S.deleted.matches || {})[id]) return;
+    if (await restoreDoc("matches/" + id)) toast("Match restored.");
+  },
+  async undeletePlayer(el) {
+    const pid = el.dataset.p, p = (S.deleted.players || {})[pid];
+    if (!isAdmin() || !p) return;
+    if (!await restoreDoc("players/" + pid)) return;
+    if ((S.deleted.payinfo || {})[pid]) restoreDoc("payinfo/" + pid);
+    toast(p.name + "'s account is restored.");
   }
 };
 
@@ -86,7 +96,7 @@ export const forms = {
     if (name.length < 2) return formErr("Nickname needs at least 2 characters.");
     const username = cleanUser(fd.get("username"));
     if (!USERNAME_RE.test(username)) return formErr("Username: " + USERNAME_HELP);
-    if (Object.values(S.players).some(p => p.username === username && p.id !== existing.id)) return formErr("That username is already taken.");
+    if ([...Object.values(S.players), ...Object.values(S.deleted.players || {})].some(p => p.username === username && p.id !== existing.id)) return formErr("That username is already taken.");
     const pos = readPositions(fd);
     if (pos.error) return formErr(pos.error);
     const seed = Number(fd.get("seed"));

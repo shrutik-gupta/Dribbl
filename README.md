@@ -53,7 +53,9 @@ The images are drawn on a canvas in `js/features/share/cards.js`; nothing is upl
 From **Me > Admin** (or any player's profile) an admin can:
 
 - **Suspend** an account: the player is logged out and can't log in until an admin restores it. Their stats and history stay. Stored as `active: false` on the player.
-- **Delete** an account: removes the player, their UPI details and their replies to matches that haven't finished. Finished matches keep their scores and ratings and show the player as "Removed player". This can't be undone.
+- **Delete** an account: hides the player and their UPI details, and they can't log in. Finished matches keep their scores and ratings and show the player as "Removed player". An admin can restore the account.
+
+Nothing is ever removed from the database. Deleting a match, an account or a payment mark sets `deletedAt` and `deletedBy` on the document and the app hides it; **Me > Admin > Deleted** lists deleted matches and accounts, who deleted them, and a **Restore** button. `firestore.rules` refuses real deletes, so older installed apps can't do one either.
 
 Admins can't suspend or delete themselves. This is separate from the penalty suspension (3 active penalties), which only stops a player joining matches.
 

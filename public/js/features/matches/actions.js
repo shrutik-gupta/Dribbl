@@ -2,7 +2,7 @@
 import { S, UI, P, activePlayers } from "../../core/state.js";
 import { render } from "../../core/render.js";
 import { go } from "../../core/router.js";
-import { delDoc, mutateMatch, setDoc } from "../../core/db.js";
+import { mutateMatch, mutateMatchOnServer, setDoc, softDelete } from "../../core/db.js";
 import { APP_NAME, CODE_LENGTH, LATE_HOURS, MAX_STRIKES, TEAM_NAME_MAX } from "../../config/constants.js";
 import { esc, firstName, fmtLong, fmtTime, joinCode, parseD, rupees, todayStr, uid, upiLink } from "../../lib/utils.js";
 import { derive, liveTeams, penOf, perHead, squadOf, suspended, ratingOf } from "../../domain/derive.js";
@@ -53,16 +53,14 @@ function syncTotals(m, pid) {
 }
 
 /* Matches still waiting to start ABANDON_HOURS after kick-off are saved as abandoned.
-   Runs on every device that has the app open; the first one to notice saves it. */
+   Runs on every device that has the app open; the first one to notice saves it. The check is
+   made on the server's copy: this device may be showing an old cached one from before kick-off. */
 const swept = new Set();
 export function sweepAbandoned() {
   for (const m of Object.values(S.matches)) {
     if (!isOverdue(m) || swept.has(m.id)) continue;
     swept.add(m.id);
-    mutateMatch(m.id, x => {
-      if (!isOverdue(x)) return false;
-      x.status = "abandoned"; x.abandon = { auto: true, at: Date.now() };
-    });
+    mutateMatchOnServer(m.id, x => isOverdue(x) && { status: "abandoned", abandon: { auto: true, at: Date.now() } });
   }
 }
 
@@ -136,12 +134,9 @@ export const actions = {
       <div class="row end"><button class="btn" type="button" data-act="closeModal">Go back</button><button class="btn danger" type="submit">Abandon match</button></div>`, "abandon", { mid: m.id });
   },
   async deleteMatch(el) {
-    if (!await confirmBox("Delete this match?", "The result, goals, ratings, payments and penalties for this match will be deleted for everyone. This can't be undone.", "Delete match", true)) return;
-    const id = el.dataset.m;
-    for (const name of ["ratings", "rsvps", "payments"]) {
-      for (const k of Object.keys(S[name]).filter(k => S[name][k].matchId === id)) await delDoc(name + "/" + k);
-    }
-    if (await delDoc("matches/" + id)) go("matches");
+    if (!await confirmBox("Delete this match?", "The result, goals, ratings, payments and penalties for this match will be hidden for everyone. An admin can restore it from Me > Admin.", "Delete match", true)) return;
+    /* Its ratings, replies and payments are left as they are: without the match nothing shows or counts them */
+    if (await softDelete("matches/" + el.dataset.m)) go("matches");
   },
 
   /* ----- who's playing ----- */
@@ -383,7 +378,7 @@ export const actions = {
     const mid = el.dataset.m;
     setDoc("payments/" + mid + "_" + S.me, { matchId: mid, pid: S.me, paidAt: Date.now(), verified: false }).then(ok => ok && toast("Marked as paid. The host will verify it."));
   },
-  undoPaid(el) { const mid = el.dataset.m, r = payOf(mid, S.me); if (r && r.verified) return; delDoc("payments/" + mid + "_" + S.me); },
+  undoPaid(el) { const mid = el.dataset.m, r = payOf(mid, S.me); if (r && r.verified) return; softDelete("payments/" + mid + "_" + S.me); },
   verifyPay(el) {
     const { m: mid, p: pid } = el.dataset, v = el.dataset.v === "1";
     const cur = payOf(mid, pid) || { matchId: mid, pid, paidAt: null };

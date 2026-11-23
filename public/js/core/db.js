@@ -37,9 +37,9 @@ export function subscribe() {
   for (const name of COLLECTIONS) {
     const map = normalise[name] || ((id, d) => clone(d));
     S.db.collection(name).onSnapshot(snap => {
-      const o = {};
-      snap.docs.forEach(d => { o[d.id] = map(d.id, d.data()); });
-      S[name] = o; S.ready[name] = true; done();
+      const o = {}, gone = {};
+      snap.docs.forEach(d => { const x = map(d.id, d.data()); (x.deletedAt ? gone : o)[d.id] = x; });
+      S[name] = o; S.deleted[name] = gone; S.ready[name] = true; done();
     }, onErr(name));
   }
   S.db.doc("config/club").onSnapshot(snap => {
@@ -68,7 +68,7 @@ const queues = {};
 function errMsg(e) {
   const c = e && e.code;
   if (c === "invalid_argument" || c === "permission-denied") return "Couldn't save. The database refused the change. Ask the admin to check the Firestore rules.";
-  if (c === "quota_exceeded") return "Storage is full. Ask the admin to delete old matches.";
+  if (c === "quota_exceeded") return "Storage is full. Ask the admin to check the Firebase plan.";
   if (c === "resource_exhausted") return "Too many saves at once. Wait a moment and try again.";
   if (c === "revoked") return "Your access to this page changed. Reload the page.";
   return "Couldn't save. Check your connection and try again.";
@@ -94,7 +94,17 @@ function enqueue(path, fn) {
 
 /* All resolve to true when saved, false when the save failed (a toast is already shown). */
 export function setDoc(path, data) { const d = clone(data); return enqueue(path, () => S.db.doc(path).set(d)); }
-export function delDoc(path) { return enqueue(path, () => S.db.doc(path).delete()); }
+
+/* Soft delete: the document stays in the database, marked with who deleted it and when, and
+   the app hides it (see subscribe). Nothing in the app hard-deletes, and firestore.rules refuses it. */
+export function softDelete(path) {
+  return enqueue(path, () => S.db.doc(path).update({ deletedAt: Date.now(), deletedBy: S.me || "" }));
+}
+/* restoredAt tells firestore.rules that clearing deletedAt is intended, not an old copy being saved over it */
+export function restoreDoc(path) {
+  const del = window.firebase.firestore.FieldValue.delete();
+  return enqueue(path, () => S.db.doc(path).update({ deletedAt: del, deletedBy: del, restoredAt: Date.now(), restoredBy: S.me || "" }));
+}
 
 export function savePlayer(pid, data) {
   const d = clone(data); delete d.id;
@@ -109,4 +119,22 @@ export function mutateMatch(id, fn) {
     if (fn(m) === false) return;
     return S.db.doc("matches/" + id).set(m);
   });
+}
+
+/* Save a change only if it still holds for the copy on the server. Fails when offline instead of
+   queueing, so a phone with an old cached copy can never overwrite a newer match. Never toasts. */
+export async function mutateMatchOnServer(id, fn) {
+  const ref = S.db.doc("matches/" + id);
+  try {
+    return await S.db.runTransaction(async t => {
+      const snap = await t.get(ref);
+      if (!snap.exists) return false;
+      const m = normalise.matches(id, snap.data()); delete m.id;
+      if (m.deletedAt) return false;
+      const patch = fn(m);
+      if (!patch) return false;
+      t.update(ref, patch);
+      return true;
+    });
+  } catch (e) { return false; }
 }

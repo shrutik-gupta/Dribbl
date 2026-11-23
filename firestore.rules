@@ -3,13 +3,34 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Only the app's own collections can be read or written.
     // Anyone who has the website link can reach this data, so keep the link within your group.
+    // Nothing can be deleted: the app marks documents with deletedAt instead (soft delete).
+
+    // A soft-deleted document can't be changed, except by a restore (which sets a later restoredAt).
+    // Stops a phone with an old cached copy from silently bringing it back.
+    function editable() {
+      return !('deletedAt' in resource.data)
+        || request.resource.data.get('restoredAt', 0) > resource.data.get('restoredAt', 0);
+    }
+    function autoAbandoned(d) { return d.get('abandon', {}).get('auto', false) == true; }
+
+    match /matches/{id} {
+      allow read: if true;
+      // New matches always start in setup. Anything else is an old copy of a match being re-created.
+      allow create: if request.resource.data.status == 'setup';
+      // A match that kicked off or finished can't be auto-abandoned by a phone that missed the kick-off.
+      allow update: if editable()
+        && !(resource.data.status in ['live', 'ended'] && autoAbandoned(request.resource.data));
+    }
+    match /players/{id} {
+      allow read, create: if true;
+      allow update: if editable();
+    }
     match /{col}/{id} {
-      allow read, write: if col in ['players', 'matches', 'rsvps', 'payments', 'payinfo', 'config'];
+      allow read, create, update: if col in ['rsvps', 'payments', 'payinfo', 'config'];
     }
     // Ratings are final: a player's rating of a match can be created once but never changed.
-    // Delete stays allowed because deleting a match removes its ratings.
     match /ratings/{id} {
-      allow read, create, delete: if true;
+      allow read, create: if true;
     }
   }
 }

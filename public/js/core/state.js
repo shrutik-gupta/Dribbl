@@ -8,6 +8,7 @@ export const S = {
   db: null,
   me: lsGet(SESSION_KEY),          // id of the logged-in player
   players: {}, matches: {}, ratings: {}, rsvps: {}, payments: {}, payinfo: {}, config: {},
+  deleted: {},                     // soft-deleted documents by collection; nothing is ever removed from the database
   ready: { players: false, matches: false, ratings: false, rsvps: false, payments: false, payinfo: false, config: false },
   bootFail: false, slow: false, loadErr: null
 };
